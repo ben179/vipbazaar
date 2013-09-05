@@ -1,9 +1,7 @@
 package com.plainvanilla.vipbazaar.model;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -51,18 +49,28 @@ public class Item {
     @Column(name="ITEM_STATE", nullable=false)
     private ItemState itemState;
 
-
     @ElementCollection
     @CollectionTable(name="ITEM_IMAGES", joinColumns = {@JoinColumn(name="ITEM_ID")})
     private List<Image> images = new ArrayList<Image>();
 
-
+    @ManyToOne(targetEntity=com.plainvanilla.vipbazaar.model.User.class)
+    @JoinColumn(name="SOLD_BY_USER")
     private User soldBy;
+
+    @ManyToOne
+    @JoinColumn(name="BOUGHT_BY_USER")
     private User boughtBy;
 
-    private List<Bid> bids = new ArrayList<Bid>();
+    @OneToMany(mappedBy = "item")
+    private Set<Bid> bids = new LinkedHashSet<Bid>();
+
+    @OneToOne
+    @JoinTable(name="ITEM_SUCCESSFUL_BID", joinColumns = @JoinColumn(name = "ITEM_ID"), inverseJoinColumns = @JoinColumn(name = "BID_ID"))
     private Bid successfulBid;
-    private List<Category> categories = new ArrayList<Category>();
+
+    @ManyToMany
+    @JoinTable(name="ITEM_CATEGORY", joinColumns = @JoinColumn(name="ITEM_ID"), inverseJoinColumns = @JoinColumn(name="CATEGORY_ID"))
+    private Set<Category> categories = new LinkedHashSet<Category>();
 
 
     public Long getItemId() {
@@ -81,19 +89,43 @@ public class Item {
         this.images = images;
     }
 
-    public List<Category> getCategories() {
-        return categories;
+    public void addCategory(Category category) {
+        if (category == null) throw new IllegalStateException();
+        categories.add(category);
+        category.addItem(this);
     }
 
-    public void setCategories(List<Category> categories) {
+    public void removeCategory(Category category) {
+        if (category == null) throw new IllegalStateException();
+        categories.remove(category);
+        category.removeItem(this);
+    }
+
+    public Set<Category> getCategories() {
+        return Collections.unmodifiableSet(categories);
+    }
+
+    private void setCategories(Set<Category> categories) {
         this.categories = categories;
     }
 
-    public List<Bid> getBids() {
-        return bids;
+    public void addBid(Bid bid) {
+        if (bid == null) throw new IllegalStateException();
+        bids.add(bid);
+        bid.setItem(this);
     }
 
-    public void setBids(List<Bid> bids) {
+    public void removeBid(Bid bid) {
+        if (bid == null) throw new IllegalStateException();
+        bids.remove(bid);
+        bid.setItem(null);
+    }
+
+    public Set<Bid> getBids() {
+        return Collections.unmodifiableSet(bids);
+    }
+
+    private void setBids(Set<Bid> bids) {
         this.bids = bids;
     }
 
@@ -183,5 +215,31 @@ public class Item {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Item)) return false;
+
+        Item item = (Item) o;
+
+        if (initialPrice != item.initialPrice) return false;
+        if (reservePrice != item.reservePrice) return false;
+        if (!approvalDatetime.equals(item.approvalDatetime)) return false;
+        if (description != null ? !description.equals(item.description) : item.description != null) return false;
+        if (endDate != null ? !endDate.equals(item.endDate) : item.endDate != null) return false;
+        if (itemState != item.itemState) return false;
+        if (!name.equals(item.name)) return false;
+        if (startDate != null ? !startDate.equals(item.startDate) : item.startDate != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = approvalDatetime.hashCode();
+        result = 31 * result + itemState.hashCode();
+        return result;
     }
 }

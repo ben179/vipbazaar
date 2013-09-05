@@ -3,8 +3,7 @@ package com.plainvanilla.vipbazaar.model;
 import org.hibernate.annotations.CollectionType;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -47,9 +46,17 @@ public class User {
     @CollectionTable(name="USER_IMAGES", joinColumns = {@JoinColumn(name="USER_ID")})
     private List<Image> images = new ArrayList<Image>();
 
-    private List<Item> soldItems = new ArrayList<Item>();
-    private List<Item> boughtItems = new ArrayList<Item>();
-    private List<BillingDetails> billingDetails = new ArrayList<BillingDetails>();
+    @OneToMany(mappedBy = "soldBy")
+    private Set<Item> soldItems = new LinkedHashSet<Item>();
+
+    @OneToMany(mappedBy = "boughtBy")
+    private Set<Item> boughtItems = new LinkedHashSet<Item>();
+
+    @OneToMany(mappedBy = "user")
+    private Set<BillingDetails> billingDetails = new LinkedHashSet<BillingDetails>();
+
+    @OneToOne
+    @JoinTable(name="USER_DEFAULT_BILLING_DETAILS", joinColumns = @JoinColumn(name="USER_ID"), inverseJoinColumns = @JoinColumn(name="BILLING_ID"))
     private BillingDetails defaultBillingDetails;
 
     @AttributeOverrides({
@@ -93,19 +100,43 @@ public class User {
         this.images = images;
     }
 
-    public List<Item> getSoldItems() {
-        return soldItems;
+    public void addSoldItem(Item item) {
+        if (item == null) throw new IllegalStateException();
+        soldItems.add(item);
+        item.setSoldBy(this);
     }
 
-    public void setSoldItems(List<Item> soldItems) {
+    public void removeSoldItem(Item item) {
+        soldItems.remove(item);
+        item.setSoldBy(null);
+    }
+
+    public Set<Item> getSoldItems() {
+        return Collections.unmodifiableSet(soldItems);
+    }
+
+    private void setSoldItems(Set<Item> soldItems) {
         this.soldItems = soldItems;
     }
 
-    public List<Item> getBoughtItems() {
-        return boughtItems;
+    public Set<Item> getBoughtItems() {
+        return Collections.unmodifiableSet(boughtItems);
     }
 
-    public void setBoughtItems(List<Item> boughtItems) {
+    public void addBoughtItem(Item item) {
+
+        if (item == null) throw new IllegalStateException();
+
+        boughtItems.add(item);
+        item.setBoughtBy(this);
+    }
+
+    public void removeBoughtItem(Item item) {
+        boughtItems.remove(item);
+        item.setBoughtBy(null);
+    }
+
+    private void setBoughtItems(Set<Item> boughtItems) {
         this.boughtItems = boughtItems;
     }
 
@@ -133,11 +164,23 @@ public class User {
         this.shipping = shipping;
     }
 
-    public List<BillingDetails> getBillingDetails() {
-        return billingDetails;
+    public void addBillingDetails(BillingDetails bd){
+        if (bd == null) throw new IllegalStateException();
+        billingDetails.add(bd);
+        bd.setUser(this);
     }
 
-    public void setBillingDetails(List<BillingDetails> billingDetails) {
+    public void removeBillingDetails(BillingDetails bd) {
+        if (bd == null) throw new IllegalStateException();
+        billingDetails.remove(bd);
+        bd.setUser(null);
+    }
+
+    public Set<BillingDetails> getBillingDetails() {
+        return Collections.unmodifiableSet(billingDetails);
+    }
+
+    private void setBillingDetails(Set<BillingDetails> billingDetails) {
         this.billingDetails = billingDetails;
     }
 
@@ -162,7 +205,7 @@ public class User {
     }
 
     public void setPassword(String password) {
-        this.password = password ;
+        this.password = password;
     }
 
     public String getFistName() {
@@ -205,5 +248,29 @@ public class User {
         this.admin = admin;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
 
+        User user = (User) o;
+
+        if (admin != user.admin) return false;
+        if (billing != null ? !billing.equals(user.billing) : user.billing != null) return false;
+        if (!defaultBillingDetails.equals(user.defaultBillingDetails)) return false;
+        if (!email.equals(user.email)) return false;
+        if (!fistName.equals(user.fistName)) return false;
+        if (!home.equals(user.home)) return false;
+        if (!lastName.equals(user.lastName)) return false;
+        if (!password.equals(user.password)) return false;
+        if (shipping != null ? !shipping.equals(user.shipping) : user.shipping != null) return false;
+        if (!userName.equals(user.userName)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return lastName.hashCode();
+    }
 }

@@ -31,8 +31,16 @@ public class Shipment {
     @Column(name="CREATED", nullable = false, updatable = false)
     private Date created;
 
+    @OneToOne
+    @JoinTable(name="ITEM_SHIPMENT", joinColumns = @JoinColumn(name = "SHIPMENT_ID"), inverseJoinColumns = @JoinColumn(name = "ITEM_ID"))
     private Item item;
+
+    @OneToOne
+    @JoinTable(name="BUYER_SHIPMENT", joinColumns = @JoinColumn(name = "SHIPMENT_ID"), inverseJoinColumns = @JoinColumn(name="USER_ID"))
     private User buyer;
+
+    @OneToOne
+    @JoinTable(name="SELLER_SHIPMENT", joinColumns =  @JoinColumn(name="SHIPMENT_ID"), inverseJoinColumns = @JoinColumn(name="USER_ID"))
     private User seller;
 
     @Embedded

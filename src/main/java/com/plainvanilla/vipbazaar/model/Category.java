@@ -1,8 +1,7 @@
 package com.plainvanilla.vipbazaar.model;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,9 +23,16 @@ public class Category {
     @Column(name="NAME", nullable = false)
     private String name;
 
+    @ManyToOne(targetEntity = com.plainvanilla.vipbazaar.model.Category.class)
+    @JoinColumn(name="PARENT_CATEGORY")
     private Category parent;
 
-    private List<Category> children = new ArrayList<Category>();
+    @OneToMany(mappedBy = "parent")
+    private Set<Category> children = new LinkedHashSet<Category>();
+
+
+    @ManyToMany(mappedBy = "categories")
+    private Set<Item> items = new LinkedHashSet<Item>();
 
     public Long getCategoryId() {
         return categoryId;
@@ -36,21 +42,38 @@ public class Category {
         this.categoryId = categoryId;
     }
 
-    public List<Item> getItems() {
-        return items;
+    public void addItem(Item item) {
+        items.add(item);
     }
 
-    public void setItems(List<Item> items) {
+    public void removeItem(Item item) {
+        items.remove(item);
+    }
+
+    public Set<Item> getItems() {
+        return Collections.unmodifiableSet(items);
+    }
+
+    private void setItems(Set<Item> items) {
         this.items = items;
     }
 
-    private List<Item> items = new ArrayList<Item>();
-
-    public List<Category> getChildren() {
-        return children;
+    public void addCategory(Category category) {
+        if (category == null) throw new IllegalStateException();
+        children.add(category);
+        category.setParent(this);
     }
 
-    public void setChildren(List<Category> children) {
+    public void removeCategory(Category category) {
+        children.remove(category);
+        category.setParent(null);
+    }
+
+    public Set<Category> getChildren() {
+        return Collections.unmodifiableSet(children);
+    }
+
+    private void setChildren(Set<Category> children) {
         this.children = children;
     }
 

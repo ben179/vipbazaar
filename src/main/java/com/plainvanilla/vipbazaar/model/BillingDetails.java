@@ -22,6 +22,18 @@ public abstract class BillingDetails {
     @Column(name="OWNER_NAME", nullable = false)
     String ownerName;
 
+    @ManyToOne(targetEntity = com.plainvanilla.vipbazaar.model.User.class)
+    @JoinColumn(name="USER_ID")
+    private User user;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     public Long getBillingId() {
         return billingId;
     }

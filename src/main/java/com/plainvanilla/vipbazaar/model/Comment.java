@@ -30,7 +30,12 @@ public class Comment {
     @Column(name="RATING")
     private int rating;
 
+    @ManyToOne(targetEntity = com.plainvanilla.vipbazaar.model.Item.class)
+    @JoinColumn(name = "ITEM_ID")
     private Item about;
+
+    @ManyToOne(targetEntity = com.plainvanilla.vipbazaar.model.User.class)
+    @JoinColumn(name = "USER_ID")
     private User from;
 
     public Long getCommentId() {

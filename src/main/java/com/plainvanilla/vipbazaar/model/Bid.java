@@ -27,7 +27,21 @@ public class Bid {
     @Column(name="CREATED", nullable = false, updatable = false)
     private Date created;
 
+    @ManyToOne(targetEntity = com.plainvanilla.vipbazaar.model.User.class)
+    @JoinColumn(name = "PLACED_BY_USER")
     private User user;
+
+    @ManyToOne(targetEntity = com.plainvanilla.vipbazaar.model.Item.class)
+    @JoinColumn(name = "ITEM_ID")
+    private Item item;
+
+    public Item getItem() {
+        return item;
+    }
+
+    public void setItem(Item item) {
+        this.item = item;
+    }
 
     public Long getBidId() {
         return bidId;
@@ -59,5 +73,25 @@ public class Bid {
 
     public void setCreated(Date created) {
         this.created = created;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Bid)) return false;
+
+        Bid bid = (Bid) o;
+
+        if (amount != bid.amount) return false;
+        if (!created.equals(bid.created)) return false;
+        if (item != null ? !item.equals(bid.item) : bid.item != null) return false;
+        if (user != null ? !user.equals(bid.user) : bid.user != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return amount;
     }
 }
