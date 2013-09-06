@@ -18,10 +18,10 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name="USER_ID", nullable = false, insertable = false, updatable = false)
+    @Column(name="USER_ID", nullable = false)
     private Long userId;
 
-    @Column(name="USER_LOGIN", nullable = false, insertable = false, updatable = false, unique = true)
+    @Column(name="USER_LOGIN", nullable = false, unique = true)
     private String userName;
 
     @Column(name="USER_PASSWORD", nullable = false)
@@ -59,29 +59,29 @@ public class User {
     @JoinTable(name="USER_DEFAULT_BILLING_DETAILS", joinColumns = @JoinColumn(name="USER_ID"), inverseJoinColumns = @JoinColumn(name="BILLING_ID"))
     private BillingDetails defaultBillingDetails;
 
+    @Embedded
     @AttributeOverrides({
             @AttributeOverride(name="street", column=@Column(name="HOME_STREET")),
-            @AttributeOverride(name="zip", column=@Column(name="HOME_ZIP")),
+            @AttributeOverride(name="zipCode", column=@Column(name="HOME_ZIP")),
             @AttributeOverride(name="city", column=@Column(name="HOME_CITY"))
     })
-    @Embedded
     private Address home;
 
 
-    @AttributeOverrides({
-        @AttributeOverride(name="street", column=@Column(name="BILLING_ADDRESS", nullable=true)),
-        @AttributeOverride(name="zip", column=@Column(name="BILLING_ZIP", nullable=true)),
-        @AttributeOverride(name="city", column=@Column(name="BILLING_CITY", nullable=true))
-    })
     @Embedded
+    @AttributeOverrides({
+        @AttributeOverride(name="street", column=@Column(name="BILLING_ADDRESS")),
+        @AttributeOverride(name="zipCode", column=@Column(name="BILLING_ZIP")),
+        @AttributeOverride(name="city", column=@Column(name="BILLING_CITY"))
+    })
     private Address billing;
 
-    @AttributeOverrides({
-            @AttributeOverride(name="street", column=@Column(name="SHIPPING_ADDRESS", nullable=true)),
-            @AttributeOverride(name="zip", column=@Column(name="SHIPPING_ZIP", nullable=true)),
-            @AttributeOverride(name="city", column=@Column(name="SHIPPING_CITY", nullable=true))
-    })
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name="street", column=@Column(name="SHIPPING_ADDRESS")),
+            @AttributeOverride(name="zipCode", column=@Column(name="SHIPPING_ZIP")),
+            @AttributeOverride(name="city", column=@Column(name="SHIPPING_CITY"))
+    })
     private Address shipping;
 
     public Long getUserId() {

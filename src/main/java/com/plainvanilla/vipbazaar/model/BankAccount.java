@@ -14,11 +14,11 @@ import javax.persistence.*;
 @Table(name = "BANK_ACCOUNT")
 @PrimaryKeyJoinColumn(name="BANK_ACCOUNT_ID")
 public class BankAccount extends BillingDetails {
-
+   /*
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name="BANK_ACCOUNT_ID", nullable = false, updatable = false, insertable = false)
-    private Long bankAccountId;
+    private Long bankAccountId;*/
 
     @Column(name="ACCOUNT_NUMBER", nullable = false)
     private String number;
@@ -28,14 +28,14 @@ public class BankAccount extends BillingDetails {
 
     @Column(name="SWIFT", nullable = false)
     private String swift;
-
+     /*
     public Long getBankAccountId() {
         return bankAccountId;
     }
 
     private void setBankAccountId(Long bankAccountId) {
         this.bankAccountId = bankAccountId;
-    }
+    }      */
 
     public String getNumber() {
         return number;
