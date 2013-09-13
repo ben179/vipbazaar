@@ -1,9 +1,12 @@
 package com.plainvanilla.vipbazaar.model;
 
+import org.apache.commons.lang3.time.DateUtils;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -23,7 +26,7 @@ public class Image implements Comparable<Image> {
     @Column(name="IMAGE_NAME", nullable=false)
     private String name;
 
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     @Column(name="IMAGE_DATE", nullable = false)
     private Date date;
 
@@ -56,4 +59,31 @@ public class Image implements Comparable<Image> {
         return (int)(this.getDate().getTime() - another.getDate().getTime());
     }
 
+    @Override
+    public String toString() {
+        return "Image{" +
+                "path='" + path + '\'' +
+                ", name='" + name + '\'' +
+                ", date=" + date +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Image)) return false;
+
+        Image image = (Image) o;
+
+        if (!DateUtils.truncatedEquals(date, image.date, Calendar.DATE)) return false;
+        if (!name.equals(image.name)) return false;
+        if (!path.equals(image.path)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

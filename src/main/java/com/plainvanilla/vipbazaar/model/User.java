@@ -1,8 +1,12 @@
 package com.plainvanilla.vipbazaar.model;
 
-import org.hibernate.annotations.CollectionType;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
+import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -13,83 +17,118 @@ import java.util.*;
  * To change this template use File | Settings | File Templates.
  */
 @Entity
-@Table(name="USER")
-public class User {
+@Table(name = "USER")
+public class User implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name="USER_ID", nullable = false)
-    private Long userId;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name = "USER_ID", nullable = false)
+    private Long id;
 
-    @Column(name="USER_LOGIN", nullable = false, unique = true)
+    @Column(name = "USER_LOGIN", nullable = false, unique = true)
     private String userName;
 
-    @Column(name="USER_PASSWORD", nullable = false)
+    @Column(name = "USER_PASSWORD", nullable = false)
     private String password;
 
-    @Column(name="FIRST_NAME")
+    @Column(name = "FIRST_NAME")
     private String fistName;
 
-    @Column(name="LAST_NAME", nullable = false)
+    @Column(name = "LAST_NAME", nullable = false)
     private String lastName;
 
-    @Column(name="EMAIL", nullable = false)
+    @Column(name = "EMAIL", nullable = false)
     private String email;
 
-    @Column(name="RANKING")
+    @Column(name = "RANKING")
     private int ranking;
 
-    @Column(name="IS_ADMIN", nullable = false)
+    @Column(name = "IS_ADMIN", nullable = false)
     private boolean admin;
 
     @ElementCollection
-    @CollectionTable(name="USER_IMAGES", joinColumns = {@JoinColumn(name="USER_ID")})
+    @CollectionTable(name = "USER_IMAGES", joinColumns = {@JoinColumn(name = "USER_ID")})
     private List<Image> images = new ArrayList<Image>();
 
     @OneToMany(mappedBy = "soldBy")
+    @Cascade(value=org.hibernate.annotations.CascadeType.SAVE_UPDATE)
     private Set<Item> soldItems = new LinkedHashSet<Item>();
 
     @OneToMany(mappedBy = "boughtBy")
+    @Cascade(value=org.hibernate.annotations.CascadeType.SAVE_UPDATE)
     private Set<Item> boughtItems = new LinkedHashSet<Item>();
 
     @OneToMany(mappedBy = "user")
+    @Cascade(value=org.hibernate.annotations.CascadeType.ALL)
     private Set<BillingDetails> billingDetails = new LinkedHashSet<BillingDetails>();
 
+    @OneToMany(mappedBy = "user")
+    @Cascade(value=org.hibernate.annotations.CascadeType.ALL)
+    private Set<Bid> bids = new LinkedHashSet<Bid>();
+
     @OneToOne
-    @JoinTable(name="USER_DEFAULT_BILLING_DETAILS", joinColumns = @JoinColumn(name="USER_ID"), inverseJoinColumns = @JoinColumn(name="BILLING_ID"))
+    @Cascade(value=org.hibernate.annotations.CascadeType.ALL)
+    @JoinTable(name = "USER_DEFAULT_BILLING_DETAILS", joinColumns = @JoinColumn(name = "USER_ID"), inverseJoinColumns = @JoinColumn(name = "BILLING_ID"))
     private BillingDetails defaultBillingDetails;
 
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name="street", column=@Column(name="HOME_STREET")),
-            @AttributeOverride(name="zipCode", column=@Column(name="HOME_ZIP")),
-            @AttributeOverride(name="city", column=@Column(name="HOME_CITY"))
+            @AttributeOverride(name = "street", column = @Column(name = "HOME_STREET")),
+            @AttributeOverride(name = "zipCode", column = @Column(name = "HOME_ZIP")),
+            @AttributeOverride(name = "city", column = @Column(name = "HOME_CITY"))
     })
     private Address home;
-
-
     @Embedded
     @AttributeOverrides({
-        @AttributeOverride(name="street", column=@Column(name="BILLING_ADDRESS")),
-        @AttributeOverride(name="zipCode", column=@Column(name="BILLING_ZIP")),
-        @AttributeOverride(name="city", column=@Column(name="BILLING_CITY"))
+            @AttributeOverride(name = "street", column = @Column(name = "BILLING_ADDRESS", nullable = true)),
+            @AttributeOverride(name = "zipCode", column = @Column(name = "BILLING_ZIP", nullable = true)),
+            @AttributeOverride(name = "city", column = @Column(name = "BILLING_CITY", nullable = true))
     })
     private Address billing;
-
     @Embedded
     @AttributeOverrides({
-            @AttributeOverride(name="street", column=@Column(name="SHIPPING_ADDRESS")),
-            @AttributeOverride(name="zipCode", column=@Column(name="SHIPPING_ZIP")),
-            @AttributeOverride(name="city", column=@Column(name="SHIPPING_CITY"))
+            @AttributeOverride(name = "street", column = @Column(name = "SHIPPING_ADDRESS", nullable = true)),
+            @AttributeOverride(name = "zipCode", column = @Column(name = "SHIPPING_ZIP", nullable = true)),
+            @AttributeOverride(name = "city", column = @Column(name = "SHIPPING_CITY", nullable = true))
     })
     private Address shipping;
 
-    public Long getUserId() {
-        return userId;
+    public User() {
+
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public User(String login, String password, String firstName, String lastName, String email, int ranking, boolean admin) {
+        setUserName(login);
+        setPassword(password);
+        setFistName(firstName);
+        setLastName(lastName);
+        setEmail(email);
+        setAdmin(admin);
+        setRanking(ranking);
+
+        System.out.println(toString());
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "ranking=" + ranking +
+                ", id=" + id +
+                ", userName='" + userName + '\'' +
+                ", password='" + password + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", fistName='" + fistName + '\'' +
+                ", email='" + email + '\'' +
+                ", admin=" + admin +
+                '}';
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public List<Image> getImages() {
@@ -123,6 +162,10 @@ public class User {
         return Collections.unmodifiableSet(boughtItems);
     }
 
+    private void setBoughtItems(Set<Item> boughtItems) {
+        this.boughtItems = boughtItems;
+    }
+
     public void addBoughtItem(Item item) {
 
         if (item == null) throw new IllegalStateException();
@@ -136,10 +179,6 @@ public class User {
         item.setBoughtBy(null);
     }
 
-    private void setBoughtItems(Set<Item> boughtItems) {
-        this.boughtItems = boughtItems;
-    }
-
     public Address getHome() {
         return home;
     }
@@ -148,7 +187,7 @@ public class User {
         this.home = home;
     }
 
-    public Address getBilling() {
+     public Address getBilling() {
         return billing;
     }
 
@@ -164,16 +203,26 @@ public class User {
         this.shipping = shipping;
     }
 
-    public void addBillingDetails(BillingDetails bd){
+    public void addBillingDetails(BillingDetails bd) {
         if (bd == null) throw new IllegalStateException();
         billingDetails.add(bd);
         bd.setUser(this);
+        if (billingDetails.size() == 1) {
+            defaultBillingDetails = (BillingDetails)billingDetails.toArray()[0];
+        }
     }
 
     public void removeBillingDetails(BillingDetails bd) {
         if (bd == null) throw new IllegalStateException();
         billingDetails.remove(bd);
         bd.setUser(null);
+        if (defaultBillingDetails.equals(bd)) {
+            defaultBillingDetails = null;
+        }
+
+        if (billingDetails.size() == 1) {
+            defaultBillingDetails = (BillingDetails)billingDetails.toArray()[0];
+        }
     }
 
     public Set<BillingDetails> getBillingDetails() {
@@ -189,7 +238,9 @@ public class User {
     }
 
     public void setDefaultBillingDetails(BillingDetails defaultBillingDetails) {
+        if (!billingDetails.contains(defaultBillingDetails)) throw new IllegalStateException();
         this.defaultBillingDetails = defaultBillingDetails;
+        defaultBillingDetails.setUser(this);
     }
 
     public String getUserName() {
@@ -248,6 +299,27 @@ public class User {
         this.admin = admin;
     }
 
+    public void addBid(Bid bid) {
+        if (bid == null) throw new IllegalStateException();
+        bids.add(bid);
+        bid.setUser(this);
+    }
+
+    public void removeBid(Bid bid) {
+        if (!bids.contains(bid)) throw new IllegalStateException();
+        bids.remove(bid);
+        bid.setUser(null);
+    }
+
+    public Set<Bid> getBids() {
+        return Collections.unmodifiableSet(bids);
+    }
+
+
+    private void setBids(Set<Bid> bids) {
+        this.bids = bids;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -255,15 +327,6 @@ public class User {
 
         User user = (User) o;
 
-        if (admin != user.admin) return false;
-        if (billing != null ? !billing.equals(user.billing) : user.billing != null) return false;
-        if (!defaultBillingDetails.equals(user.defaultBillingDetails)) return false;
-        if (!email.equals(user.email)) return false;
-        if (!fistName.equals(user.fistName)) return false;
-        if (!home.equals(user.home)) return false;
-        if (!lastName.equals(user.lastName)) return false;
-        if (!password.equals(user.password)) return false;
-        if (shipping != null ? !shipping.equals(user.shipping) : user.shipping != null) return false;
         if (!userName.equals(user.userName)) return false;
 
         return true;
@@ -273,4 +336,5 @@ public class User {
     public int hashCode() {
         return lastName.hashCode();
     }
+
 }

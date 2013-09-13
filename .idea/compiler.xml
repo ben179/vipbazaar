@@ -22,10 +22,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
+        <module name="SpringAppMVC" />
         <module name="vipbazaar" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="SpringAppMVC" target="1.6" />
       <module name="vipbazaar" target="1.6" />
     </bytecodeTargetLevel>
   </component>

@@ -14,14 +14,33 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class Address {
 
-    @Column(name="STREET", nullable=false)
+    @Column(name = "STREET", nullable = false)
     private String street;
-
-    @Column(name="ZIP", nullable=false)
+    @Column(name = "ZIP", nullable = false)
     private String zipCode;
-
-    @Column(name="CITY", nullable=false)
+    @Column(name = "CITY", nullable = false)
     private String city;
+
+    public Address() {
+
+    }
+
+    public Address(String street, String zipCode, String city) {
+        setCity(city);
+        setStreet(street);
+        setZipCode(zipCode);
+
+        System.out.println(toString());
+    }
+
+    @Override
+    public String toString() {
+        return "Address{" +
+                "street='" + street + '\'' +
+                ", zipCode='" + zipCode + '\'' +
+                ", city='" + city + '\'' +
+                '}';
+    }
 
     public String getStreet() {
         return street;
@@ -45,5 +64,24 @@ public class Address {
 
     public void setCity(String city) {
         this.city = city;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Address)) return false;
+
+        Address address = (Address) o;
+
+        if (city != null ? !city.equals(address.city) : address.city != null) return false;
+        if (street != null ? !street.equals(address.street) : address.street != null) return false;
+        if (zipCode != null ? !zipCode.equals(address.zipCode) : address.zipCode != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return zipCode != null ? zipCode.hashCode() : 0;
     }
 }

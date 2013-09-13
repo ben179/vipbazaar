@@ -1,6 +1,9 @@
 package com.plainvanilla.vipbazaar.model;
 
+import org.apache.commons.lang3.time.DateUtils;
+
 import javax.persistence.*;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -16,9 +19,9 @@ import java.util.Date;
 public class Shipment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name="SHIPMENT_ID", nullable = false, updatable = false, insertable = false)
-    private Long shipmentId;
+    private Long id;
 
     @Column(name="INSPECTION_DAYS")
     private int inspectionPeriodDays;
@@ -27,7 +30,7 @@ public class Shipment {
     @Column(name="SHIPMENT_STATE", nullable = false)
     private ShipmentState state;
 
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     @Column(name="CREATED", nullable = false, updatable = false)
     private Date created;
 
@@ -46,12 +49,12 @@ public class Shipment {
     @Embedded
     private Address delivery;
 
-    public Long getShipmentId() {
-        return shipmentId;
+    public Long getId() {
+        return id;
     }
 
-    private void setShipmentId(Long shipmentId) {
-        this.shipmentId = shipmentId;
+    private void setId(Long id) {
+        this.id = id;
     }
 
     public int getInspectionPeriodDays() {
@@ -108,5 +111,41 @@ public class Shipment {
 
     public void setDelivery(Address delivery) {
         this.delivery = delivery;
+    }
+
+    @Override
+    public String toString() {
+        return "Shipment{" +
+                "id=" + id +
+                ", inspectionPeriodDays=" + inspectionPeriodDays +
+                ", state=" + state +
+                ", created=" + created +
+                ", item=" + item +
+                ", buyer=" + buyer +
+                ", seller=" + seller +
+                ", delivery=" + delivery +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Shipment)) return false;
+
+        Shipment shipment = (Shipment) o;
+
+        if (inspectionPeriodDays != shipment.inspectionPeriodDays) return false;
+        if (!DateUtils.truncatedEquals(created, shipment.created, Calendar.DATE)) return false;
+        if (!delivery.equals(shipment.delivery)) return false;
+        if (state != shipment.state) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = state.hashCode();
+        result = 31 * result + created.hashCode();
+        return result;
     }
 }

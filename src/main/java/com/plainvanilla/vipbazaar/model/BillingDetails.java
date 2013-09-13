@@ -15,11 +15,11 @@ import javax.persistence.*;
 public abstract class BillingDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name="BILLING_ID", nullable = false, updatable = false, insertable = false)
-    Long billingId;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @Column(name="BILLING_ID", nullable = false)
+    Long id;
 
-    @Column(name="OWNER_NAME", nullable = false)
+    @Column(name="OWNER_NAME", nullable = true)
     String ownerName;
 
     @ManyToOne(targetEntity = com.plainvanilla.vipbazaar.model.User.class)
@@ -34,12 +34,12 @@ public abstract class BillingDetails {
         this.user = user;
     }
 
-    public Long getBillingId() {
-        return billingId;
+    public Long getId() {
+        return id;
     }
 
-    private void setBillingId(Long billingId) {
-        this.billingId = billingId;
+    private void setId(Long id) {
+        this.id = id;
     }
 
     public String getOwnerName() {
@@ -48,5 +48,31 @@ public abstract class BillingDetails {
 
     public void setOwnerName(String ownerName) {
         this.ownerName = ownerName;
+    }
+
+    @Override
+    public String toString() {
+        return "BillingDetails{" +
+                "id=" + id +
+                ", ownerName='" + ownerName + '\'' +
+                ", user=" + user +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BillingDetails)) return false;
+
+        BillingDetails that = (BillingDetails) o;
+
+        if (ownerName != null ? !ownerName.equals(that.ownerName) : that.ownerName != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return ownerName != null ? ownerName.hashCode() : 0;
     }
 }

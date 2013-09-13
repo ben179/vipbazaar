@@ -14,11 +14,6 @@ import javax.persistence.*;
 @Table(name = "BANK_ACCOUNT")
 @PrimaryKeyJoinColumn(name="BANK_ACCOUNT_ID")
 public class BankAccount extends BillingDetails {
-   /*
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name="BANK_ACCOUNT_ID", nullable = false, updatable = false, insertable = false)
-    private Long bankAccountId;*/
 
     @Column(name="ACCOUNT_NUMBER", nullable = false)
     private String number;
@@ -28,14 +23,6 @@ public class BankAccount extends BillingDetails {
 
     @Column(name="SWIFT", nullable = false)
     private String swift;
-     /*
-    public Long getBankAccountId() {
-        return bankAccountId;
-    }
-
-    private void setBankAccountId(Long bankAccountId) {
-        this.bankAccountId = bankAccountId;
-    }      */
 
     public String getNumber() {
         return number;
@@ -59,5 +46,33 @@ public class BankAccount extends BillingDetails {
 
     public void setSwift(String swift) {
         this.swift = swift;
+    }
+
+    @Override
+    public String toString() {
+        return "BankAccount{" +
+                "number='" + number + '\'' +
+                ", bankName='" + bankName + '\'' +
+                ", swift='" + swift + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BankAccount)) return false;
+
+        BankAccount that = (BankAccount) o;
+
+        if (!bankName.equals(that.bankName)) return false;
+        if (!number.equals(that.number)) return false;
+        if (!swift.equals(that.swift)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return bankName.hashCode();
     }
 }

@@ -1,6 +1,12 @@
 package com.plainvanilla.vipbazaar.model;
 
+import org.apache.commons.lang3.time.DateUtils;
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.CascadeType;
+
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.*;
 
 /**
@@ -12,73 +18,107 @@ import java.util.*;
  */
 
 @Entity
-@Table(name="ITEM")
+@Table(name = "ITEM")
 public class Item {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "ITEM_ID", nullable = false, updatable = false, insertable = false)
-    private Long itemId;
+    private Long id;
 
-    @Column(name="ITEM_NAME", nullable = false)
+    @Column(name = "ITEM_NAME", nullable = false)
     private String name;
 
-    @Column(name="ITEM_DESCRIPTION", nullable = true)
+    @Column(name = "ITEM_DESCRIPTION", nullable = true)
     private String description;
 
-    @Column(name="INITIAL_PRICE", nullable = false, updatable = false)
+    @Column(name = "INITIAL_PRICE", nullable = false, updatable = false)
     private int initialPrice;
 
-    @Column(name="RESERVE_PRICE", nullable = true)
+    @Column(name = "RESERVE_PRICE", nullable = true)
     private int reservePrice;
 
     @Temporal(TemporalType.DATE)
-    @Column(name="START_DATE", nullable=false, updatable = false)
+    @Column(name = "START_DATE", nullable = false, updatable = false)
     private Date startDate;
 
     @Temporal(TemporalType.DATE)
-    @Column(name="END_DATE", nullable=true)
+    @Column(name = "END_DATE", nullable = true)
     private Date endDate;
 
-
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name="APPROVAL_DATETIME", nullable=true)
+    @Temporal(TemporalType.DATE)
+    @Column(name = "APPROVAL_DATETIME", nullable = true)
     private Date approvalDatetime;
 
+
     @Enumerated(EnumType.ORDINAL)
-    @Column(name="ITEM_STATE", nullable=false)
+    @Column(name = "ITEM_STATE", nullable = false)
     private ItemState itemState;
 
     @ElementCollection
-    @CollectionTable(name="ITEM_IMAGES", joinColumns = {@JoinColumn(name="ITEM_ID")})
+    @CollectionTable(name = "ITEM_IMAGES", joinColumns = {@JoinColumn(name = "ITEM_ID")})
     private List<Image> images = new ArrayList<Image>();
 
-    @ManyToOne(targetEntity=com.plainvanilla.vipbazaar.model.User.class)
-    @JoinColumn(name="SOLD_BY_USER")
+    @ManyToOne(targetEntity = com.plainvanilla.vipbazaar.model.User.class)
+    @JoinColumn(name = "SOLD_BY_USER")
     private User soldBy;
 
     @ManyToOne
-    @JoinColumn(name="BOUGHT_BY_USER")
+    @JoinColumn(name = "BOUGHT_BY_USER")
     private User boughtBy;
 
-    @OneToMany(mappedBy = "item")
-    private Set<Bid> bids = new LinkedHashSet<Bid>();
-
-    @OneToOne
-    @JoinTable(name="ITEM_SUCCESSFUL_BID", joinColumns = @JoinColumn(name = "ITEM_ID"), inverseJoinColumns = @JoinColumn(name = "BID_ID"))
-    private Bid successfulBid;
+    @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
+    @Cascade(value = CascadeType.ALL)
+    @Sort(type = SortType.NATURAL)
+    //@IndexColumn(name = "POSITION", base = 0)
+    private SortedSet<Bid> bids = new TreeSet<Bid>();
+         /*
+    @ManyToOne
+    @JoinColumn(name="WINNING_BID_ID", nullable = true)
+    private Bid successfulBid;        */
 
     @ManyToMany
-    @JoinTable(name="ITEM_CATEGORY", joinColumns = @JoinColumn(name="ITEM_ID"), inverseJoinColumns = @JoinColumn(name="CATEGORY_ID"))
+    @JoinTable(name = "ITEM_CATEGORY", joinColumns = @JoinColumn(name = "ITEM_ID"), inverseJoinColumns = @JoinColumn(name = "CATEGORY_ID"))
     private Set<Category> categories = new LinkedHashSet<Category>();
 
+    public Item(String name, String description, int initialPrice, int reservePrice, Date startDate, Date endDate, Date approvalDatetime, ItemState itemState) {
+        this.name = name;
+        this.description = description;
+        this.initialPrice = initialPrice;
+        this.reservePrice = reservePrice;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.approvalDatetime = approvalDatetime;
+        this.itemState = itemState;
 
-    public Long getItemId() {
-        return itemId;
+        System.out.println(toString());
     }
 
-    private void setItemId(Long itemId) {
-        this.itemId = itemId;
+
+    public Item() {
+    }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", initialPrice=" + initialPrice +
+                ", reservePrice=" + reservePrice +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", approvalDatetime=" + approvalDatetime +
+                ", itemState=" + itemState +
+                '}';
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    private void setId(Long id) {
+        this.id = id;
     }
 
     public List<Image> getImages() {
@@ -111,31 +151,47 @@ public class Item {
 
     public void addBid(Bid bid) {
         if (bid == null) throw new IllegalStateException();
-        bids.add(bid);
-        bid.setItem(this);
+
+        if (bids.isEmpty() || bids.last().getAmount() < bid.getAmount()) {
+            bids.add(bid);
+            bid.setItem(this);
+          //  setSuccessfulBid(bid);
+        }
     }
 
     public void removeBid(Bid bid) {
         if (bid == null) throw new IllegalStateException();
         bids.remove(bid);
         bid.setItem(null);
+        /*
+        if (successfulBid.equals(bid)) {
+            if (!bids.isEmpty()) {
+                setSuccessfulBid(bids.get(0));
+            } else {
+                setSuccessfulBid(null);
+            }
+        }    */
     }
 
-    public Set<Bid> getBids() {
-        return Collections.unmodifiableSet(bids);
+    public SortedSet<Bid> getBids() {
+        return Collections.unmodifiableSortedSet(bids);
     }
 
-    private void setBids(Set<Bid> bids) {
+    private void setBids(SortedSet<Bid> bids) {
         this.bids = bids;
     }
 
     public Bid getSuccessfulBid() {
-        return successfulBid;
+        if (bids.isEmpty()) {
+            return null;
+        }
+        return bids.last();
     }
-
-    public void setSuccessfulBid(Bid successfulBid) {
+         /*
+    private void setSuccessfulBid(Bid successfulBid) {
+        if (!bids.contains(successfulBid)) throw new IllegalStateException();
         this.successfulBid = successfulBid;
-    }
+    }      */
 
     public ItemState getItemState() {
         return itemState;
@@ -226,20 +282,19 @@ public class Item {
 
         if (initialPrice != item.initialPrice) return false;
         if (reservePrice != item.reservePrice) return false;
-        if (!approvalDatetime.equals(item.approvalDatetime)) return false;
+        if (!DateUtils.truncatedEquals(item.getApprovalDatetime(), this.getApprovalDatetime(), Calendar.DATE)) return false;
         if (description != null ? !description.equals(item.description) : item.description != null) return false;
-        if (endDate != null ? !endDate.equals(item.endDate) : item.endDate != null) return false;
+        if (!DateUtils.truncatedEquals(item.getStartDate(), this.getStartDate(), Calendar.DATE)) return false;
+        if (!DateUtils.truncatedEquals(item.getEndDate(), this.getEndDate(), Calendar.DATE)) return false;
         if (itemState != item.itemState) return false;
         if (!name.equals(item.name)) return false;
-        if (startDate != null ? !startDate.equals(item.startDate) : item.startDate != null) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = approvalDatetime.hashCode();
-        result = 31 * result + itemState.hashCode();
+        int result = 31 * itemState.hashCode();
         return result;
     }
 }

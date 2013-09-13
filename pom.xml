@@ -12,6 +12,7 @@
         <hibernate.version>4.2.0.Final</hibernate.version>
         <hibernate.jpa.version>1.0.1.Final</hibernate.jpa.version>
         <hibernate.commons.annotations.version>3.2.0.Final</hibernate.commons.annotations.version>
+        <hsqldb.version>1.8.0.7</hsqldb.version>
     </properties>
 
     <dependencies>
@@ -84,7 +85,41 @@
             <version>${hibernate.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>${hsqldb.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.7</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.1</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>c3p0</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>0.9.1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-c3p0</artifactId>
+            <version>4.2.0.Final</version>
+        </dependency>
+
     </dependencies>
+
 
     <build>
         <finalName>vipbazaar</finalName>

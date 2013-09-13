@@ -1,6 +1,9 @@
 package com.plainvanilla.vipbazaar.model;
 
+import org.apache.commons.lang3.time.DateUtils;
+
 import javax.persistence.*;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -16,14 +19,14 @@ import java.util.Date;
 public class Comment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name="COMMENT_ID", nullable = false, insertable = false, updatable = false)
-    private Long commentId;
+    private Long id;
 
     @Column(name="TEXT", nullable=false)
     private String text;
 
-    @Temporal(TemporalType.TIMESTAMP)
+    @Temporal(TemporalType.DATE)
     @Column(name="CREATED", nullable = false, updatable = false)
     private Date created;
 
@@ -38,12 +41,12 @@ public class Comment {
     @JoinColumn(name = "USER_ID")
     private User from;
 
-    public Long getCommentId() {
-        return commentId;
+    public Long getId() {
+        return id;
     }
 
-    private void setCommentId(Long commentId) {
-        this.commentId = commentId;
+    private void setId(Long id) {
+        this.id = id;
     }
 
     public Item getAbout() {
@@ -84,5 +87,36 @@ public class Comment {
 
     public void setRating(int rating) {
         this.rating = rating;
+    }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id=" + id +
+                ", text='" + text + '\'' +
+                ", created=" + created +
+                ", rating=" + rating +
+                ", about=" + about +
+                ", from=" + from +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Comment)) return false;
+
+        Comment comment = (Comment) o;
+
+        if (rating != comment.rating) return false;
+        if (!DateUtils.truncatedEquals(created, comment.created, Calendar.DATE)) return false;
+        if (text != null ? !text.equals(comment.text) : comment.text != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return rating;
     }
 }

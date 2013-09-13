@@ -14,11 +14,6 @@ import javax.persistence.*;
 @Table(name="CREDIT_CARD")
 @PrimaryKeyJoinColumn(name="CREDIT_CARD_ID")
 public class CreditCard extends BillingDetails {
-          /*
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name="CREDIT_CARD_ID", nullable = false, insertable = false, updatable = false)
-    private Long cardId;    */
 
     @Enumerated(EnumType.ORDINAL)
     @Column(name="CREDIT_CARD_TYPE", nullable = false)
@@ -32,14 +27,6 @@ public class CreditCard extends BillingDetails {
 
     @Column(name="CARD_EXP_YEAR", nullable = false)
     private String expYear;
-  /*
-    public Long getCardId() {
-        return cardId;
-    }
-
-    private void setCardId(Long cardId) {
-        this.cardId = cardId;
-    }   */
 
     public CreditCardType getType() {
         return type;
@@ -71,5 +58,37 @@ public class CreditCard extends BillingDetails {
 
     public void setNumber(String number) {
         this.number = number;
+    }
+
+    @Override
+    public String toString() {
+        return "CreditCard{" +
+                "type=" + type +
+                ", number='" + number + '\'' +
+                ", expMonth='" + expMonth + '\'' +
+                ", expYear='" + expYear + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CreditCard)) return false;
+
+        CreditCard that = (CreditCard) o;
+
+        if (!expMonth.equals(that.expMonth)) return false;
+        if (!expYear.equals(that.expYear)) return false;
+        if (!number.equals(that.number)) return false;
+        if (type != that.type) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = expMonth.hashCode();
+        result = 31 * result + expYear.hashCode();
+        return result;
     }
 }

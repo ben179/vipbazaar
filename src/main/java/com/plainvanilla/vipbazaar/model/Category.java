@@ -16,9 +16,9 @@ import java.util.*;
 public class Category {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.SEQUENCE)
     @Column(name="CATEGORY_NAME", nullable = false, updatable=false, insertable=false)
-    private Long categoryId;
+    private Long id;
 
     @Column(name="NAME", nullable = false)
     private String name;
@@ -34,12 +34,12 @@ public class Category {
     @ManyToMany(mappedBy = "categories")
     private Set<Item> items = new LinkedHashSet<Item>();
 
-    public Long getCategoryId() {
-        return categoryId;
+    public Long getId() {
+        return id;
     }
 
-    private void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
+    private void setId(Long id) {
+        this.id = id;
     }
 
     public void addItem(Item item) {
@@ -91,5 +91,16 @@ public class Category {
 
     public void setParent(Category parent) {
         this.parent = parent;
+    }
+
+    @Override
+    public String toString() {
+        return "Category{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", parent=" + parent +
+                ", children=" + children +
+                ", items=" + items +
+                '}';
     }
 }

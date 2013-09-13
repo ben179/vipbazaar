@@ -1,5 +1,7 @@
 package com.plainvanilla.vipbazaar.model;
 
+import org.hibernate.annotations.Immutable;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -12,15 +14,16 @@ import java.util.Date;
  */
 
 @Entity
+@Immutable
 @Table(name="BID")
-public class Bid {
+public final class Bid implements Comparable<Bid> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name="BID_ID", nullable = false, updatable = false, insertable = false)
-    private Long bidId;
+    private Long id;
 
-    @Column(name="AMOUNT", nullable = false)
+    @Column(name="AMOUNT", nullable = false, updatable = false)
     private int amount;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -43,12 +46,12 @@ public class Bid {
         this.item = item;
     }
 
-    public Long getBidId() {
-        return bidId;
+    public Long getId() {
+        return id;
     }
 
-    private void setBidId(Long bidId) {
-        this.bidId = bidId;
+    private void setId(Long id) {
+        this.id = id;
     }
 
     public User getUser() {
@@ -93,5 +96,24 @@ public class Bid {
     @Override
     public int hashCode() {
         return amount;
+    }
+
+    @Override
+    public String toString() {
+        return "Bid{" +
+                "id=" + id +
+                ", amount=" + amount +
+                ", created=" + created +
+                ", user=" + user +
+                ", item=" + item +
+                '}';
+    }
+
+    @Override
+    public int compareTo(Bid another) {
+        if (another == null) {
+            return 1;
+        }
+        return this.getAmount() - another.getAmount();
     }
 }
