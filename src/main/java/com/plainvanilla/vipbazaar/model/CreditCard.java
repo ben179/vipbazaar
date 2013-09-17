@@ -67,7 +67,7 @@ public class CreditCard extends BillingDetails {
                 ", number='" + number + '\'' +
                 ", expMonth='" + expMonth + '\'' +
                 ", expYear='" + expYear + '\'' +
-                '}';
+                "} " + super.toString();
     }
 
     @Override

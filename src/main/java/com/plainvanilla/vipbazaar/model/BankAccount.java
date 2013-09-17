@@ -54,7 +54,7 @@ public class BankAccount extends BillingDetails {
                 "number='" + number + '\'' +
                 ", bankName='" + bankName + '\'' +
                 ", swift='" + swift + '\'' +
-                '}';
+                "} " + super.toString();
     }
 
     @Override

@@ -19,7 +19,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "ITEM")
-public class Item {
+public class Item implements ModelEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -67,19 +67,26 @@ public class Item {
     @JoinColumn(name = "BOUGHT_BY_USER")
     private User boughtBy;
 
-    @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
-    @Cascade(value = CascadeType.ALL)
-    @Sort(type = SortType.NATURAL)
-    //@IndexColumn(name = "POSITION", base = 0)
-    private SortedSet<Bid> bids = new TreeSet<Bid>();
-         /*
+    @OneToMany(mappedBy = "item")
+    @Cascade(value = org.hibernate.annotations.CascadeType.ALL)
+    private Set<Bid> itemBids = new LinkedHashSet<Bid>();
+
     @ManyToOne
-    @JoinColumn(name="WINNING_BID_ID", nullable = true)
-    private Bid successfulBid;        */
+    @JoinColumn(name="WINNING_BID_ID")
+    private Bid successfulBid;
 
     @ManyToMany
     @JoinTable(name = "ITEM_CATEGORY", joinColumns = @JoinColumn(name = "ITEM_ID"), inverseJoinColumns = @JoinColumn(name = "CATEGORY_ID"))
     private Set<Category> categories = new LinkedHashSet<Category>();
+
+    @OneToOne(targetEntity = Shipment.class, orphanRemoval = true)
+    @Cascade(value=org.hibernate.annotations.CascadeType.ALL)
+    @JoinTable(name="ITEM_SHIPMENT", joinColumns = @JoinColumn(name = "ITEM_ID"), inverseJoinColumns = @JoinColumn(name = "SHIPMENT_ID"))
+    private Shipment shipment;
+
+    @OneToMany(mappedBy = "about", orphanRemoval = true)
+    @Cascade(CascadeType.ALL)
+    private Set<Comment> comments = new LinkedHashSet<Comment>();
 
     public Item(String name, String description, int initialPrice, int reservePrice, Date startDate, Date endDate, Date approvalDatetime, ItemState itemState) {
         this.name = name;
@@ -152,46 +159,46 @@ public class Item {
     public void addBid(Bid bid) {
         if (bid == null) throw new IllegalStateException();
 
-        if (bids.isEmpty() || bids.last().getAmount() < bid.getAmount()) {
-            bids.add(bid);
-            bid.setItem(this);
-          //  setSuccessfulBid(bid);
+        itemBids.add(bid);
+        bid.setItem(this);
+        if (successfulBid == null || bid.getAmount() > successfulBid.getAmount()) {
+            successfulBid = bid;
         }
+
     }
 
     public void removeBid(Bid bid) {
         if (bid == null) throw new IllegalStateException();
-        bids.remove(bid);
+        itemBids.remove(bid);
         bid.setItem(null);
-        /*
+
         if (successfulBid.equals(bid)) {
-            if (!bids.isEmpty()) {
-                setSuccessfulBid(bids.get(0));
+            if (!itemBids.isEmpty()) {
+                Bid[] bidsArray = (Bid[]) itemBids.toArray();
+                Arrays.sort(bidsArray);
+                setSuccessfulBid(bidsArray[0]);
             } else {
                 setSuccessfulBid(null);
             }
-        }    */
+        }
     }
 
-    public SortedSet<Bid> getBids() {
-        return Collections.unmodifiableSortedSet(bids);
+    public Set<Bid> getItemBids() {
+        return Collections.unmodifiableSet(itemBids);
     }
 
-    private void setBids(SortedSet<Bid> bids) {
-        this.bids = bids;
+    private void setItemBids(Set<Bid> itemBids) {
+        this.itemBids = itemBids;
     }
 
     public Bid getSuccessfulBid() {
-        if (bids.isEmpty()) {
-            return null;
-        }
-        return bids.last();
+        return successfulBid;
     }
-         /*
+
     private void setSuccessfulBid(Bid successfulBid) {
-        if (!bids.contains(successfulBid)) throw new IllegalStateException();
+        if (!itemBids.contains(successfulBid)) throw new IllegalStateException();
         this.successfulBid = successfulBid;
-    }      */
+    }
 
     public ItemState getItemState() {
         return itemState;
@@ -296,5 +303,38 @@ public class Item {
     public int hashCode() {
         int result = 31 * itemState.hashCode();
         return result;
+    }
+
+    public Shipment getShipment() {
+        return shipment;
+    }
+
+    public void setShipment(Shipment shipment) {
+        this.shipment = shipment;
+        shipment.setItem(this);
+    }
+
+    public void addComment(String comment, User from) {
+        addComment(new Comment(comment), from);
+    }
+
+    public void addComment(Comment comment, User from) {
+        if (comment == null || from == null) throw new IllegalStateException();
+        comments.add(comment);
+        comment.setAbout(this);
+        comment.setFrom(from);
+    }
+
+    public void removeComment(Comment comment) {
+        comments.remove(comment);
+        comment.setAbout(null);
+    }
+
+    public Set<Comment> getComments() {
+        return Collections.unmodifiableSet(comments);
+    }
+
+    private void setComments(Set<Comment> comments) {
+        this.comments = comments;
     }
 }

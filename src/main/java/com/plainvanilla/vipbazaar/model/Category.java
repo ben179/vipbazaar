@@ -1,6 +1,11 @@
 package com.plainvanilla.vipbazaar.model;
 
+import org.hibernate.annotations.*;
+import org.hibernate.annotations.CascadeType;
+
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.*;
 
 /**
@@ -13,7 +18,7 @@ import java.util.*;
 
 @Entity
 @Table(name="CATEGORY")
-public class Category {
+public class Category implements ModelEntity<Long> {
 
     @Id
     @GeneratedValue(strategy=GenerationType.SEQUENCE)
@@ -23,15 +28,16 @@ public class Category {
     @Column(name="NAME", nullable = false)
     private String name;
 
-    @ManyToOne(targetEntity = com.plainvanilla.vipbazaar.model.Category.class)
-    @JoinColumn(name="PARENT_CATEGORY")
+    @ManyToOne
+    @JoinColumn(name="PARENT_CATEGORY", nullable = true)
     private Category parent;
 
-    @OneToMany(mappedBy = "parent")
+    @OneToMany(mappedBy = "parent", orphanRemoval = true)
+    @Cascade(value=org.hibernate.annotations.CascadeType.ALL)
     private Set<Category> children = new LinkedHashSet<Category>();
 
-
     @ManyToMany(mappedBy = "categories")
+    @Cascade(value=CascadeType.ALL)
     private Set<Item> items = new LinkedHashSet<Item>();
 
     public Long getId() {
@@ -95,10 +101,11 @@ public class Category {
 
     @Override
     public String toString() {
+
         return "Category{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
-                ", parent=" + parent +
+                ", parent=" + ((parent == null) ? "null" : parent.getName()) +
                 ", children=" + children +
                 ", items=" + items +
                 '}';

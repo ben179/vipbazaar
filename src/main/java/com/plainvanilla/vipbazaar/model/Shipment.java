@@ -16,7 +16,7 @@ import java.util.Date;
 
 @Entity
 @Table(name="SHIPMENT")
-public class Shipment {
+public class Shipment implements ModelEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -34,19 +34,23 @@ public class Shipment {
     @Column(name="CREATED", nullable = false, updatable = false)
     private Date created;
 
-    @OneToOne
-    @JoinTable(name="ITEM_SHIPMENT", joinColumns = @JoinColumn(name = "SHIPMENT_ID"), inverseJoinColumns = @JoinColumn(name = "ITEM_ID"))
+    @OneToOne(mappedBy = "shipment")
     private Item item;
 
-    @OneToOne
-    @JoinTable(name="BUYER_SHIPMENT", joinColumns = @JoinColumn(name = "SHIPMENT_ID"), inverseJoinColumns = @JoinColumn(name="USER_ID"))
+    @ManyToOne(targetEntity = User.class)
+    @JoinColumn(name="SHIPMENT_BUYER")
     private User buyer;
 
-    @OneToOne
-    @JoinTable(name="SELLER_SHIPMENT", joinColumns =  @JoinColumn(name="SHIPMENT_ID"), inverseJoinColumns = @JoinColumn(name="USER_ID"))
+    @ManyToOne(targetEntity = User.class)
+    @JoinColumn(name="SHIPMENT_SELLER")
     private User seller;
 
     @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "street", column = @Column(name = "SHIPMENT_ADDRESS", nullable = true)),
+            @AttributeOverride(name = "zipCode", column = @Column(name = "SHIPMENT_ZIP", nullable = true)),
+            @AttributeOverride(name = "city", column = @Column(name = "SHIPMENT_CITY", nullable = true))
+    })
     private Address delivery;
 
     public Long getId() {

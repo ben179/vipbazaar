@@ -16,7 +16,7 @@ import java.util.Date;
 
 @Entity
 @Table(name="COMMENT")
-public class Comment {
+public class Comment implements ModelEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -28,7 +28,7 @@ public class Comment {
 
     @Temporal(TemporalType.DATE)
     @Column(name="CREATED", nullable = false, updatable = false)
-    private Date created;
+    private Date created = new Date();
 
     @Column(name="RATING")
     private int rating;
@@ -40,6 +40,9 @@ public class Comment {
     @ManyToOne(targetEntity = com.plainvanilla.vipbazaar.model.User.class)
     @JoinColumn(name = "USER_ID")
     private User from;
+
+    public Comment() {}
+    public Comment(String text) { this.text = text; }
 
     public Long getId() {
         return id;

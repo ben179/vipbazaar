@@ -1,8 +1,10 @@
 package com.plainvanilla.vipbazaar.model;
 
+import org.apache.commons.lang3.time.DateUtils;
 import org.hibernate.annotations.Immutable;
 
 import javax.persistence.*;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -16,7 +18,7 @@ import java.util.Date;
 @Entity
 @Immutable
 @Table(name="BID")
-public final class Bid implements Comparable<Bid> {
+public final class Bid implements Comparable<Bid>, ModelEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -86,8 +88,8 @@ public final class Bid implements Comparable<Bid> {
         Bid bid = (Bid) o;
 
         if (amount != bid.amount) return false;
-        if (!created.equals(bid.created)) return false;
-        if (item != null ? !item.equals(bid.item) : bid.item != null) return false;
+        if (!DateUtils.truncatedEquals(created, bid.created, Calendar.DAY_OF_MONTH)) return false;
+       // if (item != null ? !item.equals(bid.item) : bid.item != null) return false;
         if (user != null ? !user.equals(bid.user) : bid.user != null) return false;
 
         return true;

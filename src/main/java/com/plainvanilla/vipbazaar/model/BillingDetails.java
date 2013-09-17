@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Entity
 @Table(name="BILLING_DETAILS")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class BillingDetails {
+public abstract class BillingDetails implements ModelEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)

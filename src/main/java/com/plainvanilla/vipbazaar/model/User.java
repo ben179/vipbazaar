@@ -18,7 +18,7 @@ import java.util.*;
  */
 @Entity
 @Table(name = "USER")
-public class User implements Serializable {
+public class User implements ModelEntity<Long> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -70,6 +70,18 @@ public class User implements Serializable {
     @Cascade(value=org.hibernate.annotations.CascadeType.ALL)
     @JoinTable(name = "USER_DEFAULT_BILLING_DETAILS", joinColumns = @JoinColumn(name = "USER_ID"), inverseJoinColumns = @JoinColumn(name = "BILLING_ID"))
     private BillingDetails defaultBillingDetails;
+
+    @OneToMany(mappedBy = "buyer")
+    @Cascade(value=org.hibernate.annotations.CascadeType.ALL)
+    private Set<Shipment> receivedShipments = new HashSet<Shipment>();
+
+    @OneToMany(mappedBy = "seller")
+    @Cascade(value=org.hibernate.annotations.CascadeType.ALL)
+    private Set<Shipment> sentShipments = new HashSet<Shipment>();
+
+    @OneToMany(mappedBy="from", orphanRemoval = true)
+    @Cascade(value=org.hibernate.annotations.CascadeType.ALL)
+    private Set<Comment> comments = new HashSet<Comment>();
 
     @Embedded
     @AttributeOverrides({
@@ -337,4 +349,54 @@ public class User implements Serializable {
         return lastName.hashCode();
     }
 
+    public Set<Shipment> getReceivedShipments() {
+        return Collections.unmodifiableSet(receivedShipments);
+    }
+
+    private void setReceivedShipments(Set<Shipment> receivedShipments) {
+        this.receivedShipments = receivedShipments;
+    }
+
+    public Set<Shipment> getSentShipments() {
+        return Collections.unmodifiableSet(sentShipments);
+    }
+
+    private void setSentShipments(Set<Shipment> sentShipments) {
+        this.sentShipments = sentShipments;
+    }
+
+
+    public void addComment(String text, Item about) {
+        if (text == null) throw new IllegalStateException();
+        addComment(new Comment(text), about);
+    }
+
+    public void addComment(Comment comment, Item about) {
+        if (about == null) throw new IllegalStateException();
+        comment.setAbout(about);
+        comment.setFrom(this);
+        comments.add(comment);
+    }
+
+    public void addComment(Comment comment) {
+        if (comment == null) throw new IllegalStateException();
+        comments.add(comment);
+        comment.setFrom(this);
+    }
+
+    public void removeComment(Comment comment) {
+        if (comment == null) {
+            throw new IllegalStateException();
+        }
+        comments.remove(comment);
+        comment.setFrom(null);
+    }
+
+    public Set<Comment> getComments() {
+        return Collections.unmodifiableSet(comments);
+    }
+
+    private void setComments(Set<Comment> comments) {
+        this.comments = comments;
+    }
 }

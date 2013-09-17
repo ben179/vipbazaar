@@ -1,7 +1,7 @@
 package com.plainvanilla;
 
+import com.plainvanilla.database.LogInterceptor;
 import com.plainvanilla.vipbazaar.model.*;
-import junit.framework.Test;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -35,6 +35,7 @@ public class HibernateTest {
 
     private static User buyer, seller;
     private static Item item;
+    private static Category root;
 
     @BeforeClass
     public static void setUpConfiguration() {
@@ -57,7 +58,7 @@ public class HibernateTest {
                 addAnnotatedClass(User.class);
 
         cfg.setProperty("hibernate.connection.driver_class", "org.hsqldb.jdbcDriver").
-                setProperty("hibernate.connection.url", "jdbc:hsqldb:file:daydreamersdb7").
+                setProperty("hibernate.connection.url", "jdbc:hsqldb:file:daydreamersdb10").
                 setProperty("hibernate.connection.username", "sa").
                 setProperty("hibernate.connection.password", "").
                 setProperty("hibernate.c3p0.min_size", "5").
@@ -70,6 +71,8 @@ public class HibernateTest {
                 setProperty("hibernate.show_sql", "true").
                 setProperty("hibernate.cglib.use_reflection_optimizer", "true").
                 setProperty("hibernate.connection.autocommit", "false");
+
+        cfg.setInterceptor(new LogInterceptor());
 
         sf = cfg.buildSessionFactory();
 
@@ -95,6 +98,7 @@ public class HibernateTest {
         buyer = initPojo(User.class);
         seller = initPojo(User.class);
         item = initPojo(Item.class);
+        root = initPojo(Category.class);
 
         Address address = initPojo(Address.class);
         Address address2 = initPojo(Address.class);
@@ -105,11 +109,24 @@ public class HibernateTest {
         Bid bid2 = initPojo(Bid.class);
         bid2.setAmount(101);
 
+        Shipment shipment = initPojo(Shipment.class);
+        shipment.setBuyer(buyer);
+        shipment.setSeller(seller);
+        shipment.setDelivery(buyer.getHome());
 
-        item.addBid(bid1);
-        item.addBid(bid2);
-        buyer.addBid(bid1);
-        buyer.addBid(bid2);
+        Comment comment = initPojo(Comment.class);
+
+
+        Category sub = initPojo(Category.class);
+
+        root.addCategory(sub);
+
+        item.addCategory(root);
+        item.addCategory(sub);
+
+        item.addComment(comment, buyer);
+        item.addComment("Another Comment", seller);
+        buyer.addComment("Yet another comment", item);
 
         buyer.addBoughtItem(item);
         buyer.setHome(address);
@@ -119,8 +136,15 @@ public class HibernateTest {
         seller.setHome(address2);
         seller.addBillingDetails(sellerAccount);
 
+        item.setShipment(shipment);
+        item.addBid(bid1);
+        item.addBid(bid2);
+        buyer.addBid(bid1);
+        buyer.addBid(bid2);
+
         s.save(buyer);
         s.save(seller);
+        s.save(root);
 
         assertNotNull(item.getId());
         assertNotNull(buyer.getId());
@@ -132,6 +156,11 @@ public class HibernateTest {
         assertNotNull(bid1.getId());
         assertNotNull(bid2.getId());
         assertNotNull(item.getSuccessfulBid());
+        assertNotNull(shipment.getId());
+        assertNotNull(comment.getId());
+        assertNotNull(root.getId());
+        assertNotNull(sub.getId());
+
     }
 
 
@@ -141,7 +170,6 @@ public class HibernateTest {
        User seller2 = (User)s.get(User.class, (Serializable) seller.getId());
        User buyer2 = (User)s.get(User.class, (Serializable) buyer.getId());
        Item item2 = (Item)s.get(Item.class, (Serializable) item.getId());
-
 
        assertNotNull(seller2);
        assert(seller2.equals(seller));
@@ -157,12 +185,19 @@ public class HibernateTest {
        assert(sellerBD.equals(seller.getDefaultBillingDetails()));
        assertNotNull(buyerBD);
        assert(buyerBD.equals(buyer.getDefaultBillingDetails()));
-       assertNotNull(item2.getBids());
-       assertTrue(item2.getBids().size() == 2);
+       assertNotNull(item2.getItemBids());
+       assertTrue(buyer2.getBids().size() == buyer.getBids().size());
        assertNotNull(item2.getSuccessfulBid());
        assertTrue(item.getSuccessfulBid().equals(item2.getSuccessfulBid()));
-       assertTrue(item.getBids().size() == item2.getBids().size());
 
+       assertNotNull(item2.getShipment());
+       assertTrue(buyer2.getReceivedShipments().size() == 1);
+       assertTrue(seller2.getSentShipments().size() == 1);
+
+       assertTrue(item2.getComments().size() == 3);
+       assertTrue(buyer2.getComments().size() == 2);
+       assertTrue(seller2.getComments().size() == 1);
+       assertTrue(item2.getCategories().size() == 2);
     }
 
     @org.junit.Test
