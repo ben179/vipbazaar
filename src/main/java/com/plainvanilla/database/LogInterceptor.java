@@ -40,12 +40,22 @@ public class LogInterceptor extends EmptyInterceptor {
         return true;
     }
 
-    public void afterTransactionCompletition(Transaction tx) {
-        System.out.println("ON TX COMPLETE");
+    public void afterTransactionCompletion(Transaction tx) {
+        System.out.print("ON TX COMPLETE : ");
+        if (tx.wasCommitted()) {
+            System.out.println("COMMITTED");
+        }
+
+        if (tx.wasRolledBack()) {
+            System.out.println("ROLLED BACK");
+        }
     }
 
     private static String showArray(Object [] array) {
         StringBuilder sb = new StringBuilder();
+        if (array == null) {
+            return new String();
+        }
         for (Object item : array) {
             if (item != null)
             sb.append(item.toString()).append("|");
