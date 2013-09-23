@@ -2,14 +2,14 @@ package com.plainvanilla;
 
 import com.plainvanilla.database.LogInterceptor;
 import com.plainvanilla.vipbazaar.model.*;
+import javassist.tools.rmi.ObjectNotFoundException;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
+import org.hibernate.*;
 import org.hibernate.cfg.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -82,6 +82,12 @@ public class HibernateTest {
     public void setUpSession() {
         s = sf.openSession();
         tx = s.beginTransaction();
+
+        // session will be flushed automagically during commit(),
+        // before every query execution and when flush() is called explicitly
+        //(default behavior)
+        s.setFlushMode(FlushMode.AUTO);
+
     }
 
     @After
@@ -105,22 +111,19 @@ public class HibernateTest {
         BillingDetails buyerCard = initPojo(CreditCard.class);
         BillingDetails sellerAccount = initPojo(BankAccount.class);
         Bid bid1 = initPojo(Bid.class);
-        bid1.setAmount(100);
+        Shipment shipment = initPojo(Shipment.class);
         Bid bid2 = initPojo(Bid.class);
+        Comment comment = initPojo(Comment.class);
+        Category sub = initPojo(Category.class);
+
+        bid1.setAmount(100);
         bid2.setAmount(101);
 
-        Shipment shipment = initPojo(Shipment.class);
         shipment.setBuyer(buyer);
         shipment.setSeller(seller);
         shipment.setDelivery(buyer.getHome());
 
-        Comment comment = initPojo(Comment.class);
-
-
-        Category sub = initPojo(Category.class);
-
         root.addCategory(sub);
-
         item.addCategory(root);
         item.addCategory(sub);
 
@@ -171,20 +174,28 @@ public class HibernateTest {
        User buyer2 = (User)s.get(User.class, (Serializable) buyer.getId());
        Item item2 = (Item)s.get(Item.class, (Serializable) item.getId());
 
+       // test if entities were found
        assertNotNull(seller2);
-       assert(seller2.equals(seller));
        assertNotNull(buyer2);
-       assert(buyer2.equals(buyer));
        assertNotNull(item2);
-       assert(item2.equals(item));
+
+       // verify equality
+       assertTrue(seller2.equals(seller));
+       assertTrue(buyer2.equals(buyer));
+       assertTrue(item2.equals(item));
+
+       // Hibernate uses persistent context scoped identity
+       assertFalse(seller2 == seller);
+       assertFalse(buyer2 == buyer);
+       assertFalse(item2 == item);
 
        BillingDetails sellerBD = seller2.getDefaultBillingDetails();
        BillingDetails buyerBD = buyer2.getDefaultBillingDetails();
 
        assertNotNull(sellerBD);
-       assert(sellerBD.equals(seller.getDefaultBillingDetails()));
+       assertTrue(sellerBD.equals(seller.getDefaultBillingDetails()));
        assertNotNull(buyerBD);
-       assert(buyerBD.equals(buyer.getDefaultBillingDetails()));
+       assertTrue(buyerBD.equals(buyer.getDefaultBillingDetails()));
        assertNotNull(item2.getItemBids());
        assertTrue(buyer2.getBids().size() == buyer.getBids().size());
        assertNotNull(item2.getSuccessfulBid());
@@ -200,19 +211,240 @@ public class HibernateTest {
        assertTrue(item2.getCategories().size() == 2);
     }
 
+    @Test(expected = org.hibernate.ObjectNotFoundException.class)
+    public void testLoadNonExistentEntities() {
+        try {
+            User u = (User)s.load(User.class, (Serializable) 4567321L);
+            u.getBids();
+        } catch (HibernateException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
     @org.junit.Test
     public void testLoadEntities() {
 
+        User seller2 = null;
+        User buyer2 = null;
+        Item item2 = null;
+
+        seller2 = (User)s.load(User.class, (Serializable) seller.getId());
+        buyer2 = (User)s.load(User.class, (Serializable) buyer.getId());
+        item2 = (Item)s.load(Item.class, (Serializable) item.getId());
+
+        assertFalse(Hibernate.isInitialized(item2));
+        assertFalse(Hibernate.isInitialized(seller2));
+        assertFalse(Hibernate.isInitialized(buyer2));
+
+        assertTrue(seller2.equals(seller));
+        assertTrue(buyer2.equals(buyer));
+        assertTrue(item2.equals(item));
+
+        BillingDetails sellerBD = seller2.getDefaultBillingDetails();
+        BillingDetails buyerBD = buyer2.getDefaultBillingDetails();
+
+        assertNotNull(sellerBD);
+        assert(sellerBD.equals(seller.getDefaultBillingDetails()));
+        assertNotNull(buyerBD);
+        assert(buyerBD.equals(buyer.getDefaultBillingDetails()));
+        assertNotNull(item2.getItemBids());
+        assertTrue(buyer2.getBids().size() == buyer.getBids().size());
+        assertNotNull(item2.getSuccessfulBid());
+        assertTrue(item2.getSuccessfulBid().equals(item.getSuccessfulBid()));
+
+        assertNotNull(item2.getShipment());
+        assertTrue(buyer2.getReceivedShipments().size() == 1);
+        assertTrue(seller2.getSentShipments().size() == 1);
+
+        assertTrue(item2.getComments().size() == 3);
+        assertTrue(buyer2.getComments().size() == 2);
+        assertTrue(seller2.getComments().size() == 1);
+        assertTrue(item2.getCategories().size() == 2);
     }
 
 
     @org.junit.Test
     public void testUpdateEntities() {
 
+        // load entities from to current persistent context
+        User buyerFromDB = (User)s.get(User.class, buyer.getId());
+        User sellerFromDB = (User)s.get(User.class, seller.getId());
+        Item itemFromDB = (Item)s.get(Item.class, item.getId());
+
+        buyerFromDB.setFistName("Alex");
+        sellerFromDB.setFistName("Petr");
+        itemFromDB.setName("The Item");
+
+        // flush and commit the changes, start new persistent context
+        commit();
+        setUpSession();
+
+        // load the entities from DB to the new persistent context
+        buyerFromDB = (User)s.get(User.class, buyer.getId());
+        sellerFromDB = (User)s.get(User.class, seller.getId());
+        itemFromDB = (Item)s.get(Item.class, item.getId());
+
+        // test the changes
+        assertTrue(buyerFromDB.getFistName().equals("Alex"));
+        assertTrue(sellerFromDB.getFistName().equals("Petr"));
+        assertTrue(itemFromDB.getName().equals("The Item"));
+
     }
+
+
+    @Test
+    public void testMergeEntity() {
+
+        // load entities from DB to current session by their Id
+        User sellerFromDb = (User)s.get(User.class, seller.getId());
+        User buyerFromDb = (User)s.get(User.class, buyer.getId());
+        Item itemFromDb = (Item)s.get(Item.class, item.getId());
+
+        // update detached entities from previous session
+        buyer.setFistName("Martin");
+        seller.setFistName("Karel");
+        item.setName("Some item");
+
+        // reattach detached entities by merging them to current session
+        Item mergedItem  = (Item)s.merge(item);
+        User mergedBuyer = (User)s.merge(buyer);
+        User mergedSeller = (User)s.merge(seller);
+
+        assertNotNull(mergedItem);
+        assertNotNull(mergedBuyer);
+        assertNotNull(mergedSeller);
+
+        // merged entities are represented by the same instance as currently loaded entities
+        assertTrue(sellerFromDb == mergedSeller);
+        assertTrue(buyerFromDb == mergedBuyer);
+        assertTrue(itemFromDb == mergedItem);
+
+        // but detached entities from previous session are represented by different instances
+        assertTrue(mergedItem != item);
+        assertTrue(mergedBuyer != buyer);
+        assertTrue(mergedSeller != seller);
+
+        // however, they are still meaningfully equal
+        assertTrue(mergedItem.equals(item));
+        assertTrue(mergedBuyer.equals(buyer));
+        assertTrue(mergedSeller.equals(seller));
+
+        // save changes to DB and start new persistent context
+        commit();
+        setUpSession();
+
+        //load entities and test merged changes
+        sellerFromDb = (User)s.get(User.class, seller.getId());
+        buyerFromDb = (User)s.get(User.class, buyer.getId());
+        itemFromDb = (Item)s.get(Item.class, item.getId());
+
+        assertTrue(buyerFromDb.getFistName().equals("Martin"));
+        assertTrue(sellerFromDb.getFistName().equals("Karel"));
+        assertTrue(itemFromDb.getName().equals("Some item"));
+
+    }
+
+    @Test
+    public void testReattachEntities() {
+
+        item.setName("ReattachedName");
+        seller.setFistName("ReattachedSellerName");
+        buyer.setFistName("ReattachedBuyerName");
+
+        // re-attach entities from previous session
+        // they will be treated as dirty -> SQL UPDATE is made during session Flush
+        s.update(item);
+        s.update(seller);
+        s.update(buyer);
+
+        // entities are now reattached -> even both changes made before and after re-attachment are persisted
+        item.setDescription("ReattachedDescription");
+        seller.setLastName("ReattachedSellerLastName");
+        buyer.setLastName("ReattachedBuyerLastName");
+
+        commit();
+        setUpSession();
+
+        Item itemFromDB = (Item)s.get(Item.class, item.getId());
+        User sellerFromDB = (User)s.get(User.class, seller.getId());
+        User buyerFromDB = (User)s.get(User.class, buyer.getId());
+
+        assertTrue(item.getName().equals(itemFromDB.getName()));
+        assertTrue(item.getDescription().equals(itemFromDB.getDescription()));
+        assertTrue(seller.getFistName().equals(sellerFromDB.getFistName()));
+        assertTrue(seller.getLastName().equals(sellerFromDB.getLastName()));
+        assertTrue(buyer.getFistName().equals(buyerFromDB.getFistName()));
+        assertTrue(buyer.getLastName().equals(buyerFromDB.getLastName()));
+    }
+
+    @Test(expected = org.hibernate.NonUniqueObjectException.class)
+    public void testReattachDuplicateEntity() {
+
+        Item itemFromDB2 = (Item)s.get(Item.class, item.getId());
+
+        // NOT Ok - now we would have two instances representing the same DB row in persistent context
+        // -> exception
+        s.update(item);
+    }
+
+
+    @Test
+    public void testLockEntities() {
+
+        item.setName("Before Lock Name");
+
+        Session.LockRequest request = s.buildLockRequest(LockOptions.NONE);
+        request.lock(item);
+
+        item.setDescription("After Lock");
+
+        commit();
+        setUpSession();
+
+        Item itemFromDB = (Item)s.get(Item.class, item.getId());
+
+        assertTrue(itemFromDB.getDescription().equals(item.getDescription()));
+        assertFalse(itemFromDB.getName().equals(item.getName()));
+
+
+    }
+
 
     @org.junit.Test
     public void testRemoveEntities() {
+
+        // delete does BOTH re-attachment and deletion
+        // -> we do not need to load or re-attach detached objects manually
+        s.delete(seller);
+        s.delete(buyer);
+        s.delete(item);
+
+        // commit the changes and start new persistent context
+        commit();
+        setUpSession();
+
+        // test that entities were deleted
+        User sellerFromDB = (User)s.get(User.class, seller.getId());
+        User buyerFromDB = (User)s.get(User.class, buyer.getId());
+        Item itemFromDb = (Item)s.get(Item.class, item.getId());
+
+        assertNull(sellerFromDB);
+        assertNull(buyerFromDB);
+        assertNull(itemFromDb);
+
+        // check that tables are empty
+        assertTrue(s.createQuery("from User").list().isEmpty());
+        assertTrue(s.createQuery("from Item").list().isEmpty());
+        assertTrue(s.createQuery("from BillingDetails").list().isEmpty());
+        assertTrue(s.createQuery("from CreditCard").list().isEmpty());
+        assertTrue(s.createQuery("from BankAccount").list().isEmpty());
+        assertTrue(s.createQuery("from Bid").list().isEmpty());
+        assertTrue(s.createQuery("from Comment").list().isEmpty());
+        assertTrue(s.createQuery("from Shipment").list().isEmpty());
+
+        // cascading from user did not reach category
+        assertTrue(s.createQuery("from Category").list().size() == 2);
 
     }
 
