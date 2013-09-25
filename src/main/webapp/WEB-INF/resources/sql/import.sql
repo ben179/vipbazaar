@@ -1,0 +1,2 @@
+insert into USER (IS_ADMIN, BILLING_CITY, BILLING_ADDRESS, BILLING_ZIP, EMAIL, FIRST_NAME, HOME_CITY, HOME_STREET, HOME_ZIP, LAST_NAME, USER_PASSWORD, RANKING, SHIPPING_CITY, SHIPPING_ADDRESS, SHIPPING_ZIP, USER_LOGIN, VERSION, USER_ID)
+values ('false' 'Ostrava', '1 maje', '74755', 'dfds@dsdf.cz', 'Karel', 'Praha', 'Halal 1', '74755', 'Homolo', 'fsdfsfs', 5, 'Kala', 'dfdf 5', '78955', 'ben179', null, null);

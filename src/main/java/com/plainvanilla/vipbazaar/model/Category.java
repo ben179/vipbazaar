@@ -25,6 +25,10 @@ public class Category implements ModelEntity<Long> {
     @Column(name="CATEGORY_NAME", nullable = false, updatable=false, insertable=false)
     private Long id;
 
+    @Version
+    @Column(name="VERSION")
+    private Integer version;
+
     @Column(name="NAME", nullable = false)
     private String name;
 
@@ -46,6 +50,14 @@ public class Category implements ModelEntity<Long> {
 
     private void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    private void setVersion(Integer version) {
+        this.version = version;
     }
 
     public void addItem(Item item) {

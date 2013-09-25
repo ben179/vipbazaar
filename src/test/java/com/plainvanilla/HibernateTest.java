@@ -2,8 +2,6 @@ package com.plainvanilla;
 
 import com.plainvanilla.database.LogInterceptor;
 import com.plainvanilla.vipbazaar.model.*;
-import javassist.tools.rmi.ObjectNotFoundException;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.*;
 import org.hibernate.cfg.Configuration;
 import org.junit.After;
@@ -12,10 +10,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Date;
 
+import static com.plainvanilla.test.utils.TestUtils.*;
 import static org.junit.Assert.*;
 
 /**
@@ -446,73 +442,5 @@ public class HibernateTest {
         // cascading from user did not reach category
         assertTrue(s.createQuery("from Category").list().size() == 2);
 
-    }
-
-
-    public static <T> T initPojo(Class<T> pojo) {
-        T instance = null;
-
-        try {
-            instance = pojo.newInstance();
-            initPojos(instance);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            return instance;
-        }
-    }
-
-    public static <T> void initPojos(T... pojos) {
-
-        for (T pojo : pojos) {
-
-            Field[] fields = pojo.getClass().getDeclaredFields();
-            for (Field field : fields) {
-
-                field.setAccessible(true);
-
-                StringBuilder sb = new StringBuilder(field.getName());
-                String firstLetter = sb.substring(0, 1);
-                sb.setCharAt(0, firstLetter.toUpperCase().charAt(0));
-                sb.insert(0, "set");
-                String setterName = sb.toString();
-
-                Method setter = null;
-
-                try {
-                    setter = pojo.getClass().getDeclaredMethod(setterName);
-                    setter.setAccessible(true);
-                } catch (NoSuchMethodException e) {
-                    //    System.out.println("Setter " + pojo.getClass().getName() + "." + setterName + " not found for field :" + field.getName());
-                }
-
-                // skip JPA @Id fields
-                if (field.isAnnotationPresent(javax.persistence.Id.class) || (setter != null && setter.isAnnotationPresent(javax.persistence.Id.class))) {
-                    continue;
-                }
-
-                Class type = field.getType();
-                try {
-                    if (type.equals(String.class)) {
-                        field.set(pojo, RandomStringUtils.randomAlphabetic(((int)(Math.random() * 15)) + 1));
-                    } else if (type.equals(Date.class)) {
-                        field.set(pojo, new Date((long)(Math.random() * new Date().getTime())));
-                    } else if (type.equals(int.class) || type.equals(Integer.class) || type.equals(long.class) || type.equals(Long.class)) {
-                        field.set(pojo, (int) (Math.random() * 1000));
-                    } else if (type.isEnum()) {
-                        final Object[] constants = type.getEnumConstants();
-                        final int order = (int)(Math.random() * constants.length);
-                        field.set(pojo, constants[order]);
-                    } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-                        boolean value = (Math.random() > 0.5);
-                        field.set(pojo, value);
-                    }
-
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-            }
-            System.out.println(pojo.toString());
-        }
     }
 }

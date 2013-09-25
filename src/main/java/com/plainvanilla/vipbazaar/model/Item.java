@@ -26,6 +26,10 @@ public class Item implements ModelEntity<Long> {
     @Column(name = "ITEM_ID", nullable = false, updatable = false, insertable = false)
     private Long id;
 
+    @Version
+    @Column(name="VERSION")
+    private Integer version;
+
     @Column(name = "ITEM_NAME", nullable = false)
     private String name;
 
@@ -126,6 +130,14 @@ public class Item implements ModelEntity<Long> {
 
     private void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    private void setVersion(Integer version) {
+        this.version = version;
     }
 
     public List<Image> getImages() {

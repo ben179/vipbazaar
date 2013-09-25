@@ -25,6 +25,10 @@ public class User implements ModelEntity<Long> {
     @Column(name = "USER_ID", nullable = false)
     private Long id;
 
+    @Version
+    @Column(name="VERSION")
+    private Integer version;
+
     @Column(name = "USER_LOGIN", nullable = false, unique = true)
     private String userName;
 
@@ -141,6 +145,14 @@ public class User implements ModelEntity<Long> {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    private void setVersion(Integer version) {
+        this.version = version;
     }
 
     public List<Image> getImages() {

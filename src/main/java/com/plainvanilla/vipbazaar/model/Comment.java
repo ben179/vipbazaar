@@ -23,6 +23,10 @@ public class Comment implements ModelEntity<Long> {
     @Column(name="COMMENT_ID", nullable = false, insertable = false, updatable = false)
     private Long id;
 
+    @Version
+    @Column(name="VERSION")
+    private Integer version;
+
     @Column(name="TEXT", nullable=false)
     private String text;
 
@@ -50,6 +54,14 @@ public class Comment implements ModelEntity<Long> {
 
     private void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    private void setVersion(Integer version) {
+        this.version = version;
     }
 
     public Item getAbout() {

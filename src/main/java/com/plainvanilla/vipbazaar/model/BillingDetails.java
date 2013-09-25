@@ -19,6 +19,10 @@ public abstract class BillingDetails implements ModelEntity<Long> {
     @Column(name="BILLING_ID", nullable = false)
     Long id;
 
+    @Version
+    @Column(name="VERSION")
+    private Integer version;
+
     @Column(name="OWNER_NAME", nullable = true)
     String ownerName;
 
@@ -40,6 +44,14 @@ public abstract class BillingDetails implements ModelEntity<Long> {
 
     private void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    private void setVersion(Integer version) {
+        this.version = version;
     }
 
     public String getOwnerName() {

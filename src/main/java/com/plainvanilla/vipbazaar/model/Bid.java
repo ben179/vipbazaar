@@ -25,6 +25,11 @@ public final class Bid implements Comparable<Bid>, ModelEntity<Long> {
     @Column(name="BID_ID", nullable = false, updatable = false, insertable = false)
     private Long id;
 
+    @Version
+    @Column(name="VERSION")
+    private Integer version;
+
+
     @Column(name="AMOUNT", nullable = false, updatable = false)
     private int amount;
 
@@ -54,6 +59,14 @@ public final class Bid implements Comparable<Bid>, ModelEntity<Long> {
 
     private void setId(Long id) {
         this.id = id;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    private void setVersion(Integer version) {
+        this.version = version;
     }
 
     public User getUser() {
