@@ -1,6 +1,5 @@
-package com.plainvanilla.test.strategy;
+package com.plainvanilla.test.hibernate.strategy;
 
-import com.plainvanilla.test.strategy.InteractionStrategy;
 import org.hibernate.SessionFactory;
 
 /**

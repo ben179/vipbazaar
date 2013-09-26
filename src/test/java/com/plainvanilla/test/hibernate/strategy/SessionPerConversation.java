@@ -1,4 +1,4 @@
-package com.plainvanilla.test.strategy;
+package com.plainvanilla.test.hibernate.strategy;
 
 import com.plainvanilla.vipbazaar.model.User;
 import org.hibernate.*;
@@ -24,7 +24,7 @@ public class SessionPerConversation implements InteractionStrategy {
             Transaction t1 = session.beginTransaction();
 
             User userFromDb = (User)session.get(User.class, entityId);
-            userFromDb.setFistName(Thread.currentThread().getName());
+            userFromDb.setFirstName(Thread.currentThread().getName());
 
             t1.commit();
 

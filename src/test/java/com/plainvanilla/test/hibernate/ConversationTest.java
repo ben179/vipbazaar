@@ -1,10 +1,10 @@
-package com.plainvanilla;
+package com.plainvanilla.test.hibernate;
 
 import com.plainvanilla.database.LogInterceptor;
-import com.plainvanilla.test.strategy.ConversationWithDetachedObjects;
-import com.plainvanilla.test.strategy.InteractionStrategy;
-import com.plainvanilla.test.strategy.PessimisticLocking;
-import com.plainvanilla.test.strategy.SessionPerConversation;
+import com.plainvanilla.test.hibernate.strategy.ConversationWithDetachedObjects;
+import com.plainvanilla.test.hibernate.strategy.InteractionStrategy;
+import com.plainvanilla.test.hibernate.strategy.PessimisticLocking;
+import com.plainvanilla.test.hibernate.strategy.SessionPerConversation;
 import com.plainvanilla.vipbazaar.model.*;
 import org.hibernate.*;
 import org.hibernate.cfg.Configuration;
@@ -54,7 +54,7 @@ public class ConversationTest {
                 addAnnotatedClass(User.class);
 
         cfg.setProperty("hibernate.connection.driver_class", "org.hsqldb.jdbcDriver").
-                setProperty("hibernate.connection.url", "jdbc:hsqldb:file:daydreamersdb10").
+                setProperty("hibernate.connection.url", "jdbc:hsqldb:mem:daydreamersdb10").
                 setProperty("hibernate.connection.username", "sa").
                 setProperty("hibernate.connection.password", "").
                 setProperty("hibernate.c3p0.min_size", "5").
@@ -108,7 +108,7 @@ public class ConversationTest {
         User userFromDB2 = (User)getEntityById(u.getId(), sf, User.class);
 
         // check that all three properties were modified by a single user
-        assertEquals(userFromDB2.getFistName(), userFromDB2.getLastName());
+        assertEquals(userFromDB2.getFirstName(), userFromDB2.getLastName());
         assertEquals(userFromDB2.getLastName(), userFromDB2.getPassword());
     }
 

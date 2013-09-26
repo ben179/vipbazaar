@@ -3,10 +3,8 @@ package com.plainvanilla.vipbazaar.model;
 import org.hibernate.annotations.*;
 
 import javax.persistence.*;
-import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.io.Serializable;
 import java.util.*;
 
 /**
@@ -36,7 +34,7 @@ public class User implements ModelEntity<Long> {
     private String password;
 
     @Column(name = "FIRST_NAME")
-    private String fistName;
+    private String firstName;
 
     @Column(name = "LAST_NAME", nullable = false)
     private String lastName;
@@ -116,7 +114,7 @@ public class User implements ModelEntity<Long> {
     public User(String login, String password, String firstName, String lastName, String email, int ranking, boolean admin) {
         setUserName(login);
         setPassword(password);
-        setFistName(firstName);
+        setFirstName(firstName);
         setLastName(lastName);
         setEmail(email);
         setAdmin(admin);
@@ -133,7 +131,7 @@ public class User implements ModelEntity<Long> {
                 ", userName='" + userName + '\'' +
                 ", password='" + password + '\'' +
                 ", lastName='" + lastName + '\'' +
-                ", fistName='" + fistName + '\'' +
+                ", firstName='" + firstName + '\'' +
                 ", email='" + email + '\'' +
                 ", admin=" + admin +
                 '}';
@@ -283,12 +281,12 @@ public class User implements ModelEntity<Long> {
         this.password = password;
     }
 
-    public String getFistName() {
-        return fistName;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setFistName(String fistName) {
-        this.fistName = fistName;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
     public String getLastName() {

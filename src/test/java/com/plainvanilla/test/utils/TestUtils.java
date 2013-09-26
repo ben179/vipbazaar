@@ -1,7 +1,7 @@
 package com.plainvanilla.test.utils;
 
-import com.plainvanilla.test.strategy.InteractionStrategy;
-import com.plainvanilla.test.strategy.StrategyExecutor;
+import com.plainvanilla.test.hibernate.strategy.InteractionStrategy;
+import com.plainvanilla.test.hibernate.strategy.StrategyExecutor;
 import com.plainvanilla.vipbazaar.model.ModelEntity;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.HibernateException;

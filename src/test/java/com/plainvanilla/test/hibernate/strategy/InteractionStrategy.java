@@ -1,4 +1,4 @@
-package com.plainvanilla.test.strategy;
+package com.plainvanilla.test.hibernate.strategy;
 
 import org.hibernate.SessionFactory;
 

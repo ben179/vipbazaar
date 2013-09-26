@@ -1,4 +1,4 @@
-package com.plainvanilla.test.strategy;
+package com.plainvanilla.test.hibernate.strategy;
 
 import com.plainvanilla.vipbazaar.model.User;
 import org.hibernate.*;
@@ -29,7 +29,7 @@ public class ConversationWithDetachedObjects implements InteractionStrategy {
             attachDetachedUser(userFromDB, sf, new UserCallback() {
                 @Override
                 public void updateUser(User u) {
-                    u.setFistName(Thread.currentThread().getName());
+                    u.setFirstName(Thread.currentThread().getName());
                 }
             });
 

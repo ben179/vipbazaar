@@ -1,4 +1,4 @@
-package com.plainvanilla.test.strategy;
+package com.plainvanilla.test.hibernate.strategy;
 
 import com.plainvanilla.vipbazaar.model.User;
 import org.hibernate.*;
@@ -24,7 +24,7 @@ public class PessimisticLocking implements InteractionStrategy {
 
             User lockedUser = (User) session.load(User.class, entityId, LockOptions.UPGRADE);
 
-            lockedUser.setFistName(Thread.currentThread().getName());
+            lockedUser.setFirstName(Thread.currentThread().getName());
 
             randomUserThinkTime();
 
