@@ -1,5 +1,6 @@
 package com.plainvanilla.test.hibernate;
 
+import com.plainvanilla.test.utils.TestUtils;
 import com.plainvanilla.vipbazaar.model.*;
 import org.hibernate.*;
 import org.hibernate.cfg.Configuration;
@@ -15,9 +16,7 @@ import static org.junit.Assert.*;
  * Time: 12:38
  * To change this template use File | Settings | File Templates.
  */
-public class BatchProcessingAndQueries {
-
-
+public class BatchProcessingTest {
     public static final int USER_COUNT = 100;
     private static Configuration cfg = null;
     private static SessionFactory sf = null;
@@ -25,38 +24,8 @@ public class BatchProcessingAndQueries {
 
     @BeforeClass
     public static void init() {
-        cfg = new Configuration();
-
-        cfg.addAnnotatedClass(Address.class).
-                addAnnotatedClass(BankAccount.class).
-                addAnnotatedClass(Bid.class).
-                addAnnotatedClass(BillingDetails.class).
-                addAnnotatedClass(Category.class).
-                addAnnotatedClass(Comment.class).
-                addAnnotatedClass(CreditCard.class).
-                addAnnotatedClass(CreditCardType.class).
-                addAnnotatedClass(Image.class).
-                addAnnotatedClass(Item.class).
-                addAnnotatedClass(ItemState.class).
-                addAnnotatedClass(Shipment.class).
-                addAnnotatedClass(ShipmentState.class).
-                addAnnotatedClass(User.class);
-
-        cfg.setProperty("hibernate.connection.driver_class", "org.hsqldb.jdbcDriver").
-                setProperty("hibernate.connection.url", "jdbc:hsqldb:mem:daydreamersdb10").
-                setProperty("hibernate.connection.username", "sa").
-                setProperty("hibernate.connection.password", "").
-                setProperty("hibernate.hbm2ddl.auto", "create-drop").
-                setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect").
-                setProperty("hibernate.connection.pool_size", "5").
-                setProperty("hibernate.show_sql", "true").
-                setProperty("hibernate.cglib.use_reflection_optimizer", "true").
-                setProperty("hibernate.connection.autocommit", "false").
-                setProperty("hibernate.jdbc.batch_size", "20"). // we must set batch size to something reasonable
-                setProperty("hibernate.cache.use_second_level_cache", "false"); // we should disable 2nd level cache
-
+        cfg = TestUtils.getConfiguration();
         sf = cfg.buildSessionFactory();
-
     }
 
     @Test
@@ -118,7 +87,7 @@ public class BatchProcessingAndQueries {
             assertEquals(q.list().size(), USER_COUNT);
 
             Query q2 = session.createQuery("from User u where u.firstName = 'Martin' and u.lastName='Bazmek' and u.password='tralala'");
-            assertEquals(q.list().size(), USER_COUNT);
+            assertEquals(q2.list().size(), USER_COUNT);
 
 
         } catch (HibernateException e) {

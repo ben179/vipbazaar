@@ -2,12 +2,13 @@ package com.plainvanilla.test.utils;
 
 import com.plainvanilla.test.hibernate.strategy.InteractionStrategy;
 import com.plainvanilla.test.hibernate.strategy.StrategyExecutor;
-import com.plainvanilla.vipbazaar.model.ModelEntity;
+import com.plainvanilla.vipbazaar.model.*;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -21,6 +22,39 @@ import java.util.Date;
  * To change this template use File | Settings | File Templates.
  */
 public class TestUtils {
+
+    public static Configuration getConfiguration() {
+
+        Configuration cfg = new Configuration();
+
+        cfg.addAnnotatedClass(Address.class).
+                addAnnotatedClass(BankAccount.class).
+                addAnnotatedClass(Bid.class).
+                addAnnotatedClass(BillingDetails.class).
+                addAnnotatedClass(Category.class).
+                addAnnotatedClass(Comment.class).
+                addAnnotatedClass(CreditCard.class).
+                addAnnotatedClass(CreditCardType.class).
+                addAnnotatedClass(Image.class).
+                addAnnotatedClass(Item.class).
+                addAnnotatedClass(ItemState.class).
+                addAnnotatedClass(Shipment.class).
+                addAnnotatedClass(ShipmentState.class).
+                addAnnotatedClass(User.class);
+
+        cfg.setProperty("hibernate.connection.driver_class", "org.hsqldb.jdbcDriver").
+                setProperty("hibernate.connection.url", "jdbc:hsqldb:mem:daydreamersdb10").
+                setProperty("hibernate.connection.username", "sa").
+                setProperty("hibernate.connection.password", "").
+                setProperty("hibernate.hbm2ddl.auto", "create-drop").
+                setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect").
+                setProperty("hibernate.connection.pool_size", "5").
+                setProperty("hibernate.show_sql", "true").
+                setProperty("hibernate.cglib.use_reflection_optimizer", "true").
+                setProperty("hibernate.connection.autocommit", "false");
+
+        return cfg;
+    }
 
     public static <T> T initPojo(Class<T> pojo) {
         T instance = null;

@@ -1,6 +1,7 @@
 package com.plainvanilla.test.hibernate;
 
 import com.plainvanilla.database.LogInterceptor;
+import com.plainvanilla.test.utils.TestUtils;
 import com.plainvanilla.vipbazaar.model.*;
 import org.hibernate.*;
 import org.hibernate.cfg.Configuration;
@@ -36,40 +37,8 @@ public class MappingTest {
     @BeforeClass
     public static void setUpConfiguration() {
 
-        cfg = new Configuration();
-
-        cfg.addAnnotatedClass(Address.class).
-                addAnnotatedClass(BankAccount.class).
-                addAnnotatedClass(Bid.class).
-                addAnnotatedClass(BillingDetails.class).
-                addAnnotatedClass(Category.class).
-                addAnnotatedClass(Comment.class).
-                addAnnotatedClass(CreditCard.class).
-                addAnnotatedClass(CreditCardType.class).
-                addAnnotatedClass(Image.class).
-                addAnnotatedClass(Item.class).
-                addAnnotatedClass(ItemState.class).
-                addAnnotatedClass(Shipment.class).
-                addAnnotatedClass(ShipmentState.class).
-                addAnnotatedClass(User.class);
-
-        cfg.setProperty("hibernate.connection.driver_class", "org.hsqldb.jdbcDriver").
-                setProperty("hibernate.connection.url", "jdbc:hsqldb:mem:daydreamersdb10").
-                setProperty("hibernate.connection.username", "sa").
-                setProperty("hibernate.connection.password", "").
-                setProperty("hibernate.c3p0.min_size", "5").
-                setProperty("hibernate.c3p0.max_size", "20").
-                setProperty("hibernate.c3p0.timeout", "1800").
-                setProperty("hibernate.c3p0.max_statements", "50").
-                setProperty("hibernate.hbm2ddl.auto", "create-drop").
-                setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect").
-                setProperty("hibernate.connection.pool_size", "5").
-                setProperty("hibernate.show_sql", "true").
-                setProperty("hibernate.cglib.use_reflection_optimizer", "true").
-                setProperty("hibernate.connection.autocommit", "false");
-
+        cfg = TestUtils.getConfiguration();
         cfg.setInterceptor(new LogInterceptor());
-
         sf = cfg.buildSessionFactory();
 
     }
