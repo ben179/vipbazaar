@@ -1,10 +1,7 @@
 package com.plainvanilla.test.hibernate;
 
 import com.plainvanilla.database.LogInterceptor;
-import com.plainvanilla.test.hibernate.strategy.ConversationWithDetachedObjects;
-import com.plainvanilla.test.hibernate.strategy.InteractionStrategy;
-import com.plainvanilla.test.hibernate.strategy.PessimisticLocking;
-import com.plainvanilla.test.hibernate.strategy.SessionPerConversation;
+import com.plainvanilla.test.hibernate.strategy.*;
 import com.plainvanilla.test.utils.TestUtils;
 import com.plainvanilla.vipbazaar.model.*;
 import org.hibernate.*;
@@ -79,6 +76,19 @@ public class ConversationTest {
         // check that all three properties were modified by a single user
         assertEquals(userFromDB2.getFirstName(), userFromDB2.getLastName());
         assertEquals(userFromDB2.getLastName(), userFromDB2.getPassword());
+    }
+
+    public static void runUsers(int userCount, SessionFactory sf, Long entityId, Class<? extends InteractionStrategy> strategy) {
+        StrategyExecutor[] users = new StrategyExecutor[userCount];
+        try {
+            for (int i = 0; i < userCount; i++) {
+                users[i] = new StrategyExecutor("user" + i, strategy.newInstance(), sf, entityId);
+            }
+            waitForThreads(users);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
 }

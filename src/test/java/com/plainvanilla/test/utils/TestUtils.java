@@ -140,18 +140,7 @@ public class TestUtils {
         userThinkTime((int)(Math.random() * maxSeconds));
     }
 
-    public static void runUsers(int userCount, SessionFactory sf, Long entityId, Class<? extends InteractionStrategy> strategy) {
-        StrategyExecutor [] users = new StrategyExecutor[userCount];
-        try {
-            for (int i = 0; i < userCount; i++) {
-                users[i] = new StrategyExecutor("user" + i, strategy.newInstance(), sf, entityId);
-            }
-            waitForThreads(users);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
 
-    }
 
     public static void saveEntity(ModelEntity<Long> entity, SessionFactory sf) {
         Session session = sf.openSession();
